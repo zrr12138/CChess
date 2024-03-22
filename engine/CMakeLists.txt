@@ -7,14 +7,15 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(third-party)
 
 # 添加源文件
-# set(SOURCES server.cpp)
+set(SOURCES ChessBoard.cpp
+        ChessBoradTest.cpp)
 
 # 添加头文件路径
 include_directories(
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/third-party/Crow/include
-#        ${PROJECT_SOURCE_DIR}/third-party/glog/src
-#        ${CMAKE_BINARY_DIR}/third-party/gflags/include
+        ${PROJECT_SOURCE_DIR}/third-party/glog/src
+        ${CMAKE_BINARY_DIR}/third-party/gflags/include
 )
 
 # 设置构建类型为 Debug
@@ -26,7 +27,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
 # 生成可执行文件
 
-#add_library(CChess_lib ${SOURCES})
+add_library(CChess_lib ${SOURCES})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # Linux环境下链接tcmalloc
@@ -39,4 +40,7 @@ else()
 endif()
 
 add_executable(server server.cpp)
-#target_link_libraries()
+target_link_libraries(server CChess_lib)
+
+add_executable(ChessBoradTest ChessBoradTest.cpp)
+target_link_libraries(ChessBoradTest CChess_lib)
