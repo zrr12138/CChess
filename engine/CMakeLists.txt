@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(third-party)
 
 # 添加源文件
-set(SOURCES ChessBoard.cpp)
+set(SOURCES ChessBoard.cpp
+        ChessBoradTest.cpp)
 
 # 添加头文件路径
 include_directories(
@@ -40,3 +41,6 @@ endif()
 
 add_executable(server server.cpp)
 target_link_libraries(server CChess_lib)
+
+add_executable(ChessBoradTest ChessBoradTest.cpp)
+target_link_libraries(ChessBoradTest CChess_lib)
