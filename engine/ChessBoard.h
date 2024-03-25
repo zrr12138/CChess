@@ -24,7 +24,6 @@ namespace CChess {
         int start_y;
         int end_x;
         int end_y;
-
         ChessMove(int startX, int startY, int endX, int endY);
 
         bool operator==(const ChessMove &rhs) const;
@@ -45,13 +44,15 @@ namespace CChess {
 
     class ChessBoard {
     private:
-        Chess board[10][9];
+        Chess **board;
     public:
-        ChessBoard();
+        ChessBoard(int  row, int col);
 
-        void GetMoves(bool is_red, std::vector<ChessMove> *moves) const;
+        ~ChessBoard();
 
-        void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const;
+        void GetMoves(std::vector<ChessMove> *moves) const;
+
+        void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
         Chess GetChessAt(int x, int y) const;
 
@@ -63,11 +64,12 @@ namespace CChess {
 
         void initBoard();
 
-        bool SetChessAt(const Chess &chess, int x, int y);
+        bool SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
-        void ParseFromString(const std::string &str);
-
+        void ParseFromString(const std::string &str); //json字符串
         std::string ToString() const;
+
+        void PrintOnTerminal();
     };
 }
 
