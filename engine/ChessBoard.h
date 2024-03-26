@@ -39,6 +39,8 @@ namespace CChess {
         ChessType type;
         bool is_red;
 
+        Chess();
+
         Chess(ChessType type, bool isRed);
     };
 
@@ -46,10 +48,25 @@ namespace CChess {
 
     private:
         Chess board[10][9];
+
+        void JuRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void PaoRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void MaRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void XiangRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void ShiRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void WangRule(int row, int col, std::vector<ChessMove> *moves);
+
+        void BingRule(int row, int col, std::vector<ChessMove> *moves);
+
     public:
         ChessBoard();
 
-        void GetMoves(std::vector<ChessMove> *moves) const;
+        void GetMoves(std::vector<ChessMove> *moves);
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 

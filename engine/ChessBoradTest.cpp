@@ -27,7 +27,8 @@ int main(int argc, char *argv[]) {
     //test1();
     std::cout << "hello world" << std::endl;
     ChessBoard board;
-/*    board.ClearBoard();
+    board.ClearBoard();
     board.initBoard();
-    board.PrintOnTerminal();*/
+    board.PrintOnTerminal();
+
 }
