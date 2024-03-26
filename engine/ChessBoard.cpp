@@ -14,7 +14,7 @@ namespace CChess {
         }
     }
 
-    void JuRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void JuRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
 //    if (!board[row][col].is_red) {
             // 检查车的水平向左运动
             for (int i = col - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ namespace CChess {
 //        }
     }
 
-    void PaoRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void PaoRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         // 检查炮的水平向左移动
         for (int i = col - 1; i >= 0; i--) {
             if (board[row][i].type == ChessType::Empty) {
@@ -125,7 +125,7 @@ namespace CChess {
         }
     }
 
-    void MaRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void MaRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         // 八个可能的马脚位置
         int offsets[8][2] = {{-2, -1}, {-2, 1}, {-1, 2}, {1, 2},
                              {2, 1},  {2, -1},  {1, -2},  {-1, -2}};
@@ -148,7 +148,7 @@ namespace CChess {
         }
     }
 
-    void XiangRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void XiangRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         // 四个可能的象眼的位置
         int offsets[4][2] = {{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
         for (auto & offset : offsets) {
@@ -169,7 +169,7 @@ namespace CChess {
         }
     }
 
-    void ShiRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void ShiRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         // 五个可能的士的位置
         int startCol = (col / 3) * 3;
         int startRow;
@@ -188,7 +188,7 @@ namespace CChess {
         }
     }
 
-    void WangRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void WangRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         // 四个可能的帅的移动位置
         int offsets[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
         for (int i = 0; i < 4; i++) {
@@ -202,7 +202,7 @@ namespace CChess {
         }
     }
 
-    void BingRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
+    void BingRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
         //兵的移动位置 判断是否过河;
         int ReGuohe[3][2] = {{-1, 0}, {0, 1}, {0, -1}};
         int BaGuohe[3][2] = {{0, -1}, {0, 1}, {1, 0}};
@@ -243,8 +243,9 @@ namespace CChess {
                 }
             }
         }
-
     }
+
+
 
     void ChessBoard::GetMoves(std::vector<ChessMove> *moves) const {
         moves->reserve(100000);
@@ -279,10 +280,10 @@ namespace CChess {
         }
     }
 
-
-
     Chess ChessBoard::GetChessAt(int x, int y) const {
-        return Chess(Ma, false);
+        assert(0 <= x && x < 10);
+        assert(0 <= x && x < 9);
+        return {board[x][y].type, board[x][y].is_red};
     }
 
     bool ChessBoard::Move(const ChessMove &move) {
@@ -401,14 +402,15 @@ namespace CChess {
 
     }
 
-    ChessBoard::ChessBoard(int row, int col) {
-        board = new Chess*[row];
-        for (int i = 0; i < row; i++) {
-            board[i] = reinterpret_cast<Chess *>(new Chess *[col]);
+    ChessBoard::ChessBoard() {
+        for (int i = 0; i < 10; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                board[i][j].type = Empty;
+                board[i][j].is_red = true;
+            }
         }
     }
 
-    ChessBoard::~ChessBoard() = default;
 
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}
 
