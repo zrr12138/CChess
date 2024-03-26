@@ -43,12 +43,11 @@ namespace CChess {
     };
 
     class ChessBoard {
-    private:
-        Chess **board;
-    public:
-        ChessBoard(int  row, int col);
 
-        ~ChessBoard();
+    private:
+        Chess board[10][9];
+    public:
+        ChessBoard();
 
         void GetMoves(std::vector<ChessMove> *moves) const;
 
@@ -70,6 +69,7 @@ namespace CChess {
         std::string ToString() const;
 
         void PrintOnTerminal();
+
     };
 }
 
