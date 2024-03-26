@@ -46,7 +46,9 @@ namespace CChess {
     private:
         Chess **board;
     public:
-        ChessBoard();
+        ChessBoard(int  row, int col);
+
+        ~ChessBoard();
 
         void GetMoves(std::vector<ChessMove> *moves) const;
 

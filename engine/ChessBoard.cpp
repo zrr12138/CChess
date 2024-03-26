@@ -14,7 +14,7 @@ namespace CChess {
         }
     }
 
-    void JuRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void JuRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
 //    if (!board[row][col].is_red) {
             // 检查车的水平向左运动
             for (int i = col - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ namespace CChess {
 //        }
     }
 
-    void PaoRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void PaoRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         // 检查炮的水平向左移动
         for (int i = col - 1; i >= 0; i--) {
             if (board[row][i].type == ChessType::Empty) {
@@ -125,7 +125,7 @@ namespace CChess {
         }
     }
 
-    void MaRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void MaRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         // 八个可能的马脚位置
         int offsets[8][2] = {{-2, -1}, {-2, 1}, {-1, 2}, {1, 2},
                              {2, 1},  {2, -1},  {1, -2},  {-1, -2}};
@@ -148,7 +148,7 @@ namespace CChess {
         }
     }
 
-    void XiangRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void XiangRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         // 四个可能的象眼的位置
         int offsets[4][2] = {{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
         for (auto & offset : offsets) {
@@ -169,7 +169,7 @@ namespace CChess {
         }
     }
 
-    void ShiRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void ShiRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         // 五个可能的士的位置
         int startCol = (col / 3) * 3;
         int startRow;
@@ -188,7 +188,7 @@ namespace CChess {
         }
     }
 
-    void WangRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void WangRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         // 四个可能的帅的移动位置
         int offsets[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
         for (int i = 0; i < 4; i++) {
@@ -202,7 +202,7 @@ namespace CChess {
         }
     }
 
-    void BingRule(std::vector<ChessMove> *moves, Chess *board[], int row, int col) {
+    void BingRule(int row, int col, Chess *board[], std::vector<ChessMove> *moves) {
         //兵的移动位置 判断是否过河;
         int ReGuohe[3][2] = {{-1, 0}, {0, 1}, {0, -1}};
         int BaGuohe[3][2] = {{0, -1}, {0, 1}, {1, 0}};
@@ -252,25 +252,26 @@ namespace CChess {
             for (int col = 0; col < 9; col++) {
                 switch ( board[row][col].type ) {
                     case Ju:
-                        JuRule(moves, board, row, col);
+                        JuRule(row, col, board, moves);
                         break;
                     case Pao:
-                        PaoRule(moves,board,row,col);
+                        PaoRule(row, col, board, moves);
                         break;
                     case Ma:
-                        MaRule(moves,board,row,col);
+                        MaRule(row, col, board, moves);
                         break;
                     case Xiang:
-                        XiangRule(moves, board, row, col);
+                        XiangRule(row, col, board, moves);
                         break;
                     case Shi:
-                        ShiRule(moves, board, row, col);
+                        ShiRule(row, col, board, moves);
                         break;
                     case Wang:
-                        WangRule(moves, board, row, col);
+                        WangRule(row, col, board, moves);
                         break;
                     case Bing:
-                        BingRule(moves, board, row, col);
+                        BingRule(row, col, board, moves);
+                        break;
                     default:
                         break;
                 }
@@ -334,8 +335,11 @@ namespace CChess {
                             board[i][j].type = board[9 - i][j].type = Wang;
                             board[i][j].is_red = false;
                             board[9 - i][j].is_red = true;
+                            break;
                         default:
-                            assert(0);
+                            board[i][j].type = Empty;
+                            board[i][j].is_red = true;
+                            break;
                     }
                 }
                 else if (i == 2 && j == 1) {
@@ -361,9 +365,6 @@ namespace CChess {
         }
     }
 
-    ChessBoard::ChessBoard() {
-
-    }
 
     void ChessBoard::GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const {
 
@@ -391,13 +392,23 @@ namespace CChess {
                         c = '0';
                         break;
                     default:
-                        assert(0);
+                        c = '1';
+                        break;
                 }
                 std::cout << c << " ";
             }
         }
 
     }
+
+    ChessBoard::ChessBoard(int row, int col) {
+        board = new Chess*[row];
+        for (int i = 0; i < row; i++) {
+            board[i] = reinterpret_cast<Chess *>(new Chess *[col]);
+        }
+    }
+
+    ChessBoard::~ChessBoard() = default;
 
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}
 

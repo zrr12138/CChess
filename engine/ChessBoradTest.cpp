@@ -25,8 +25,9 @@ using namespace CChess;
 
 int main(int argc, char *argv[]) {
     //test1();
-    std::cout << "hello world";
-    ChessBoard board;
+    std::cout << "hello world" << std::endl;
+    ChessBoard board(10,9);
+    board.ClearBoard();
     board.initBoard();
     board.PrintOnTerminal();
 }
