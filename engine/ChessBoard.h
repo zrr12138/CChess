@@ -77,7 +77,9 @@ namespace CChess {
         void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
 
     public:
-        ChessBoard();
+        ChessBoard(int  row, int col);
+
+        ~ChessBoard();
 
         void BoardRed(bool is_red);
 
