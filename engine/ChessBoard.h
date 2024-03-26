@@ -39,6 +39,8 @@ namespace CChess {
         ChessType type;
         bool is_red;
 
+        Chess();
+
         Chess(ChessType type, bool isRed);
     };
 
@@ -46,6 +48,21 @@ namespace CChess {
 
     private:
         Chess board[10][9];
+
+        void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void PaoRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void MaRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void XiangRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void ShiRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void WangRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
+
     public:
         ChessBoard();
 
@@ -63,12 +80,14 @@ namespace CChess {
 
         void initBoard();
 
-        bool SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
+        void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
         void ParseFromString(const std::string &str); //json字符串
         std::string ToString() const;
 
         void PrintOnTerminal();
+
+        void PrintMoves(std::vector<ChessMove> *moves) const;
 
     };
 }

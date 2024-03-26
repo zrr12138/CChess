@@ -14,7 +14,7 @@ namespace CChess {
         }
     }
 
-    void JuRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::JuRule(int row, int col,std::vector<ChessMove> *moves) const{
 //    if (!board[row][col].is_red) {
             // 检查车的水平向左运动
             for (int i = col - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ namespace CChess {
 //        }
     }
 
-    void PaoRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::PaoRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 检查炮的水平向左移动
         for (int i = col - 1; i >= 0; i--) {
             if (board[row][i].type == ChessType::Empty) {
@@ -125,7 +125,7 @@ namespace CChess {
         }
     }
 
-    void MaRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::MaRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 八个可能的马脚位置
         int offsets[8][2] = {{-2, -1}, {-2, 1}, {-1, 2}, {1, 2},
                              {2, 1},  {2, -1},  {1, -2},  {-1, -2}};
@@ -134,46 +134,46 @@ namespace CChess {
         for (int i = 0; i < 8; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
-            int mid_x = 0;
-            int mid_y = 0;
-            for (int j = 0; j < 4; j = i / 2) {
-                mid_x = row + offsets2[j][0];
-                mid_y = col + offsets2[j][1];
-            }
-            assert(0 <= end_x && end_x < 10);
-            assert(0 <= end_y && end_y < 9);
-            if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red)) {
-                AddMoveIfValid(row, col, end_x, end_y, moves);
+            int mid_x = row + offsets2[i / 2][0];
+            int mid_y = col + offsets2[i / 2][1];
+            if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9) {
+                if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red)) {
+                    AddMoveIfValid(row, col, end_x, end_y, moves);
+                }
             }
         }
     }
 
-    void XiangRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::XiangRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 四个可能的象眼的位置
         int offsets[4][2] = {{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
-        for (auto & offset : offsets) {
-            int end_x = row + offset[0];
-            int end_y = col + offset[1];
-            assert(0 <= end_x && end_x < 10);
-            assert(0 <= end_y && end_y < 9);
-            if (board[row][col].is_red) {
-                assert(4 < end_x && end_x< 10);
-            } else {
-                assert(0 <= end_x && end_y< 5);
-            }
+        for (int i = 0; i < 4; i++) {
+            int end_x = row + offsets[i][0];
+            int end_y = col + offsets[i][1];
             int mid_x = (row + end_x) / 2;
             int mid_y = (col + end_y) / 2;
-            if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
-                AddMoveIfValid(row, col, end_x, end_y, moves);
+            if (!board[end_x][end_y].is_red) {
+                if (0 <= end_x && end_x < 5 && 0 <= end_y && end_y < 9) {
+                    if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
+            } else {
+                if (5 <= end_x && end_x < 9 && 0 <= end_y && end_y < 9) {
+                    if (board[mid_x][mid_y].type == Empty &&
+                        (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
             }
         }
     }
 
-    void ShiRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::ShiRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 五个可能的士的位置
         int startCol = (col / 3) * 3;
         int startRow;
-        if (0 <= row && row < 3) {
+        if (!board[row][col].is_red) {
             startRow = (row / 3) * 3;
         } else {
             startRow = (row / 7) * 7;
@@ -188,21 +188,29 @@ namespace CChess {
         }
     }
 
-    void WangRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 四个可能的帅的移动位置
         int offsets[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
-            assert((0 <= end_x && end_x < 3) || (6 < end_x && end_x < 10));
-            assert(2 < end_y && end_y < 6);
-            if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                AddMoveIfValid(end_x, end_y, row, col, moves);
+            if (!board[row][col].is_red) {
+                if (0 <= end_x && end_x < 3 && 2 < end_y && end_y < 6) {
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
+            } else {
+                if (7 <= end_x && end_x < 10 && 2 < end_y && end_y < 6) {
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
             }
         }
     }
 
-    void BingRule(int row, int col, const Chess board[10][9], std::vector<ChessMove> *moves) {
+    void ChessBoard::BingRule(int row, int col, std::vector<ChessMove> *moves) const{
         //兵的移动位置 判断是否过河;
         int ReGuohe[3][2] = {{-1, 0}, {0, 1}, {0, -1}};
         int BaGuohe[3][2] = {{0, -1}, {0, 1}, {1, 0}};
@@ -213,32 +221,32 @@ namespace CChess {
                 if (row < 5) {
                     end_x = row + ReGuohe[i][0];
                     end_y = col + ReGuohe[i][1];
-                    assert(0 <= end_x && end_x < 10);
-                    assert(0 <= end_y && end_y < 9);
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9){
+                        if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                        }
                     }
                 } else {
                     end_x = row - 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                        break;
                     }
                 }
             } else {
                 if (row > 4) {
                     end_x = row + BaGuohe[i][0];
                     end_y = col + BaGuohe[i][1];
-                    assert(0 <= end_x && end_x < 10);
-                    assert(0 <= end_y && end_y < 9);
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
                     }
                 } else {
                     end_x = row + 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                        break;
                     }
                 }
             }
@@ -247,31 +255,31 @@ namespace CChess {
 
 
 
-    void ChessBoard::GetMoves(std::vector<ChessMove> *moves) const {
-        moves->reserve(100000);
+    void ChessBoard::GetMoves(std::vector<ChessMove> *moves) const{
+        //moves->reserve(1);
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 switch ( board[row][col].type ) {
                     case Ju:
-                        JuRule(row, col, board, moves);
+                        JuRule(row, col, moves);
                         break;
                     case Pao:
-                        PaoRule(row, col, board, moves);
+                        PaoRule(row, col, moves);
                         break;
                     case Ma:
-                        MaRule(row, col, board, moves);
+                        MaRule(row, col, moves);
                         break;
                     case Xiang:
-                        XiangRule(row, col, board, moves);
+                        XiangRule(row, col, moves);
                         break;
                     case Shi:
-                        ShiRule(row, col, board, moves);
+                        ShiRule(row, col, moves);
                         break;
                     case Wang:
-                        WangRule(row, col, board, moves);
+                        WangRule(row, col, moves);
                         break;
                     case Bing:
-                        BingRule(row, col, board, moves);
+                        BingRule(row, col, moves);
                         break;
                     default:
                         break;
@@ -338,8 +346,6 @@ namespace CChess {
                             board[9 - i][j].is_red = true;
                             break;
                         default:
-                            board[i][j].type = Empty;
-                            board[i][j].is_red = true;
                             break;
                     }
                 }
@@ -371,8 +377,9 @@ namespace CChess {
 
     }
 
-    bool ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
-        return false;
+    void ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
+        board[x][y].type = chess.type;
+        board[x][y].is_red = chess.is_red;
     }
 
     void ChessBoard::ParseFromString(const std::string &str) {
@@ -389,11 +396,29 @@ namespace CChess {
             for (int j = 0; j < 9; ++j) {
                 char c;
                 switch (board[i][j].type) {
-                    case Empty:
+                    case Ju:
+                        c = '4';
+                        break;
+                    case Pao:
+                        c = '5';
+                        break;
+                    case Ma:
+                        c = '1';
+                        break;
+                    case Xiang:
+                        c = '6';
+                        break;
+                    case Shi:
+                        c = '3';
+                        break;
+                    case Wang:
                         c = '0';
                         break;
+                    case Bing:
+                        c = '2';
+                        break;
                     default:
-                        c = '1';
+                        c = 'x';
                         break;
                 }
                 std::cout << c << " ";
@@ -411,8 +436,19 @@ namespace CChess {
         }
     }
 
+    void ChessBoard::PrintMoves(std::vector<ChessMove> *moves) const{
+            for (const ChessMove& move : *moves) {
+                std::cout << "StartX: " << move.start_x << ", StartY: " << move.start_y
+                          << ", EndX: " << move.end_x << ", EndY: " << move.end_y << std::endl;
+            }
+    }
+
 
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}
+
+    Chess::Chess() {
+
+    }
 
     ChessMove::ChessMove(int startX, int startY, int endX, int endY) : start_x(startX), start_y(startY), end_x(endX),
                                                                        end_y(endY) {}
