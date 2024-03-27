@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
+    <generated>
+      <config projectName="CChess" targetName="server" />
+      <config projectName="CChess" targetName="CChess_lib" />
+      <config projectName="CChess" targetName="ChessBoradTest" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="58306837-85d3-4720-9feb-3b2e12cd9896" name="Changes" comment="修复棋子bug">
+      <change beforePath="$PROJECT_DIR$/engine/ChessBoard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/engine/ChessBoard.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/ChessBoradTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/engine/ChessBoradTest.cpp" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" show_ignored="true" />
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2eDV91Wi8TFCVennGNiCm2lrtj3" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C/C++ File.server.cpp.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ChessBoradTest.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.server.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.advertisement.text.has.clang-format&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;sq__dev__borad__api&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="CMake Application.ChessBoradTest">
+    <configuration name="CChess_lib" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CChess" TARGET_NAME="CChess_lib" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ChessBoradTest" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CChess" TARGET_NAME="ChessBoradTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CChess" RUN_TARGET_NAME="ChessBoradTest">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="server" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CChess" TARGET_NAME="server" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CChess" RUN_TARGET_NAME="server">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="CMake Application.CChess_lib" />
+      <item itemvalue="CMake Application.ChessBoradTest" />
+      <item itemvalue="CMake Application.server" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="58306837-85d3-4720-9feb-3b2e12cd9896" name="Changes" comment="" />
+      <created>1711093169603</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1711093169603</updated>
+      <workItem from="1711093170941" duration="5724000" />
+      <workItem from="1711117662132" duration="131000" />
+      <workItem from="1711156233929" duration="2934000" />
+      <workItem from="1711159194016" duration="2511000" />
+      <workItem from="1711162129701" duration="1883000" />
+      <workItem from="1711165271786" duration="40718000" />
+      <workItem from="1711328868927" duration="19341000" />
+      <workItem from="1711416274020" duration="19422000" />
+      <workItem from="1711438982026" duration="10507000" />
+      <workItem from="1711497486463" duration="8289000" />
+    </task>
+    <task id="LOCAL-00001" summary="实现后三个函数">
+      <option name="closed" value="true" />
+      <created>1711244098071</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1711244098071</updated>
+    </task>
+    <task id="LOCAL-00002" summary="实现GetMove函数，但未解决程序崩溃问题">
+      <option name="closed" value="true" />
+      <created>1711362456181</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1711362456181</updated>
+    </task>
+    <task id="LOCAL-00003" summary="解决程序崩溃问题，没有分配内存原因导致，修改了ChessBoard构造函数和析构函数">
+      <option name="closed" value="true" />
+      <created>1711419872583</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1711419872583</updated>
+    </task>
+    <task id="LOCAL-00004" summary="ChessBoard()函数">
+      <option name="closed" value="true" />
+      <created>1711433379581</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1711433379581</updated>
+    </task>
+    <task id="LOCAL-00005" summary="ChessBoard()函数">
+      <option name="closed" value="true" />
+      <created>1711437902336</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1711437902336</updated>
+    </task>
+    <task id="LOCAL-00006" summary="修复了ChessBoard函数,并且修改GetMove内部函数的调用">
+      <option name="closed" value="true" />
+      <created>1711440164049</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1711440164049</updated>
+    </task>
+    <task id="LOCAL-00007" summary="修复棋子bug">
+      <option name="closed" value="true" />
+      <created>1711505609661</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1711505609661</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VCPKGProject">
+    <isAutomaticCheckingOnLaunch value="false" />
+    <isAutomaticFoundErrors value="true" />
+    <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="sq_dev_borad_api" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="实现后三个函数" />
+    <MESSAGE value="实现GetMove函数，但未解决程序崩溃问题" />
+    <MESSAGE value="解决程序崩溃问题，没有分配内存原因导致，修改了ChessBoard构造函数和析构函数" />
+    <MESSAGE value="ChessBoard()函数" />
+    <MESSAGE value="修复了ChessBoard函数,并且修改GetMove内部函数的调用" />
+    <MESSAGE value="修复棋子bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="修复棋子bug" />
+  </component>
+</project>

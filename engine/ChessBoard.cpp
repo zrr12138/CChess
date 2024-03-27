@@ -295,11 +295,23 @@ namespace CChess {
     }
 
     bool ChessBoard::Move(const ChessMove &move) {
-        return false;
+        board[move.end_x][move.end_y].type = board[move.start_x][move.start_y].type;
+        board[move.end_x][move.end_y].is_red = board[move.start_x][move.start_y].is_red;
+        board[move.start_x][move.start_y].type = Empty;
+        return true;
     }
 
     BoardResult ChessBoard::End() const {
-        return NOT_END;
+        switch (is_end) {
+            case 0:
+                return BoardResult::NOT_END;
+            case 1:
+                return BoardResult::BLACK_WIN;
+            case -1:
+                return BoardResult::RED_WIN;
+            default:
+                assert(0);
+        }
     }
 
     void ChessBoard::ClearBoard() {
@@ -374,12 +386,20 @@ namespace CChess {
 
 
     void ChessBoard::GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const {
-
+        auto it = move->begin();
+        while (it != move->end()) {
+            int start_x = it->start_x;
+            int start_y = it->start_y;
+            if (start_x != x || start_y != y) {
+                it = move->erase(it);
+            } else {
+                it++;
+            }
+        }
     }
 
     void ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
-        board[x][y].type = chess.type;
-        board[x][y].is_red = chess.is_red;
+        board[x][y] = chess;
     }
 
     void ChessBoard::ParseFromString(const std::string &str) {
@@ -428,12 +448,7 @@ namespace CChess {
     }
 
     ChessBoard::ChessBoard() {
-        for (int i = 0; i < 10; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                board[i][j].type = Empty;
-                board[i][j].is_red = true;
-            }
-        }
+
     }
 
     void ChessBoard::PrintMoves(std::vector<ChessMove> *moves) const{
@@ -447,7 +462,15 @@ namespace CChess {
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}
 
     Chess::Chess() {
+        SetEmpty();
+    }
 
+    bool Chess::IsEmpty() const {
+        return type == Empty;
+    }
+
+    void Chess::SetEmpty() {
+        type = Empty;
     }
 
     ChessMove::ChessMove(int startX, int startY, int endX, int endY) : start_x(startX), start_y(startY), end_x(endX),

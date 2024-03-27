@@ -41,6 +41,12 @@ namespace CChess {
 
         Chess();
 
+        bool IsEmpty() const;
+
+        void SetEmpty();
+
+
+
         Chess(ChessType type, bool isRed);
     };
 
@@ -48,6 +54,10 @@ namespace CChess {
 
     private:
         Chess board[10][9];
+
+        int is_end;
+        bool is_init;
+        int move_num;
 
         void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
 

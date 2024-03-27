@@ -23,11 +23,11 @@ void test1() {
     std::vector<ChessMove> moves;
     board.PrintOnTerminal();
     board.GetMoves(&moves);
+    board.GetMovesFrom(2, 0, &moves);
     board.PrintMoves(&moves);
-    //board.GetMovesFrom(2, 0, &moves);
-    //assert(moves.size() == 2);
-    //assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 0, 1)) != moves.end());
-    //assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 4, 1)) != moves.end());
+    assert(moves.size() == 2);
+    assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 0, 1)) != moves.end());
+    assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 4, 1)) != moves.end());
 }
 
 int main(int argc, char *argv[]) {
