@@ -14,7 +14,7 @@ namespace CChess {
         }
     }
 
-    void ChessBoard::JuRule(int row, int col,std::vector<ChessMove> *moves) {
+    void ChessBoard::JuRule(int row, int col,std::vector<ChessMove> *moves) const{
 //    if (!board[row][col].is_red) {
             // 检查车的水平向左运动
             for (int i = col - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ namespace CChess {
 //        }
     }
 
-    void ChessBoard::PaoRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::PaoRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 检查炮的水平向左移动
         for (int i = col - 1; i >= 0; i--) {
             if (board[row][i].type == ChessType::Empty) {
@@ -125,7 +125,7 @@ namespace CChess {
         }
     }
 
-    void ChessBoard::MaRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::MaRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 八个可能的马脚位置
         int offsets[8][2] = {{-2, -1}, {-2, 1}, {-1, 2}, {1, 2},
                              {2, 1},  {2, -1},  {1, -2},  {-1, -2}};
@@ -134,46 +134,46 @@ namespace CChess {
         for (int i = 0; i < 8; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
-            int mid_x = 0;
-            int mid_y = 0;
-            for (int j = 0; j < 4; j = i / 2) {
-                mid_x = row + offsets2[j][0];
-                mid_y = col + offsets2[j][1];
-            }
-            assert(0 <= end_x && end_x < 10);
-            assert(0 <= end_y && end_y < 9);
-            if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red)) {
-                AddMoveIfValid(row, col, end_x, end_y, moves);
+            int mid_x = row + offsets2[i / 2][0];
+            int mid_y = col + offsets2[i / 2][1];
+            if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9) {
+                if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red)) {
+                    AddMoveIfValid(row, col, end_x, end_y, moves);
+                }
             }
         }
     }
 
-    void ChessBoard::XiangRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::XiangRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 四个可能的象眼的位置
         int offsets[4][2] = {{-2, -2}, {-2, 2}, {2, -2}, {2, 2}};
-        for (auto & offset : offsets) {
-            int end_x = row + offset[0];
-            int end_y = col + offset[1];
-            assert(0 <= end_x && end_x < 10);
-            assert(0 <= end_y && end_y < 9);
-            if (board[row][col].is_red) {
-                assert(4 < end_x && end_x< 10);
-            } else {
-                assert(0 <= end_x && end_y< 5);
-            }
+        for (int i = 0; i < 4; i++) {
+            int end_x = row + offsets[i][0];
+            int end_y = col + offsets[i][1];
             int mid_x = (row + end_x) / 2;
             int mid_y = (col + end_y) / 2;
-            if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
-                AddMoveIfValid(row, col, end_x, end_y, moves);
+            if (!board[end_x][end_y].is_red) {
+                if (0 <= end_x && end_x < 5 && 0 <= end_y && end_y < 9) {
+                    if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
+            } else {
+                if (5 <= end_x && end_x < 9 && 0 <= end_y && end_y < 9) {
+                    if (board[mid_x][mid_y].type == Empty &&
+                        (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
             }
         }
     }
 
-    void ChessBoard::ShiRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::ShiRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 五个可能的士的位置
         int startCol = (col / 3) * 3;
         int startRow;
-        if (0 <= row && row < 3) {
+        if (!board[row][col].is_red) {
             startRow = (row / 3) * 3;
         } else {
             startRow = (row / 7) * 7;
@@ -188,21 +188,29 @@ namespace CChess {
         }
     }
 
-    void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 四个可能的帅的移动位置
         int offsets[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
-            assert((0 <= end_x && end_x < 3) || (6 < end_x && end_x < 10));
-            assert(2 < end_y && end_y < 6);
-            if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                AddMoveIfValid(end_x, end_y, row, col, moves);
+            if (!board[row][col].is_red) {
+                if (0 <= end_x && end_x < 3 && 2 < end_y && end_y < 6) {
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
+            } else {
+                if (7 <= end_x && end_x < 10 && 2 < end_y && end_y < 6) {
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
+                }
             }
         }
     }
 
-    void ChessBoard::BingRule(int row, int col, std::vector<ChessMove> *moves) {
+    void ChessBoard::BingRule(int row, int col, std::vector<ChessMove> *moves) const{
         //兵的移动位置 判断是否过河;
         int ReGuohe[3][2] = {{-1, 0}, {0, 1}, {0, -1}};
         int BaGuohe[3][2] = {{0, -1}, {0, 1}, {1, 0}};
@@ -213,32 +221,32 @@ namespace CChess {
                 if (row < 5) {
                     end_x = row + ReGuohe[i][0];
                     end_y = col + ReGuohe[i][1];
-                    assert(0 <= end_x && end_x < 10);
-                    assert(0 <= end_y && end_y < 9);
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9){
+                        if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                        }
                     }
                 } else {
                     end_x = row - 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                        break;
                     }
                 }
             } else {
                 if (row > 4) {
                     end_x = row + BaGuohe[i][0];
                     end_y = col + BaGuohe[i][1];
-                    assert(0 <= end_x && end_x < 10);
-                    assert(0 <= end_y && end_y < 9);
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
                     }
                 } else {
                     end_x = row + 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty && board[end_x][end_y].is_red != board[row][col].is_red) {
-                        AddMoveIfValid(end_x, end_y, row, col, moves);
+                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                        break;
                     }
                 }
             }
@@ -247,8 +255,8 @@ namespace CChess {
 
 
 
-    void ChessBoard::GetMoves(std::vector<ChessMove> *moves) {
-        moves->reserve(100000);
+    void ChessBoard::GetMoves(std::vector<ChessMove> *moves) const{
+        //moves->reserve(1);
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 switch ( board[row][col].type ) {
@@ -338,8 +346,6 @@ namespace CChess {
                             board[9 - i][j].is_red = true;
                             break;
                         default:
-                            board[i][j].type = Empty;
-                            board[i][j].is_red = true;
                             break;
                     }
                 }
@@ -371,8 +377,9 @@ namespace CChess {
 
     }
 
-    bool ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
-        return false;
+    void ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
+        board[x][y].type = chess.type;
+        board[x][y].is_red = chess.is_red;
     }
 
     void ChessBoard::ParseFromString(const std::string &str) {
@@ -427,6 +434,13 @@ namespace CChess {
                 board[i][j].is_red = true;
             }
         }
+    }
+
+    void ChessBoard::PrintMoves(std::vector<ChessMove> *moves) const{
+            for (const ChessMove& move : *moves) {
+                std::cout << "StartX: " << move.start_x << ", StartY: " << move.start_y
+                          << ", EndX: " << move.end_x << ", EndY: " << move.end_y << std::endl;
+            }
     }
 
 

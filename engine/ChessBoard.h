@@ -49,24 +49,24 @@ namespace CChess {
     private:
         Chess board[10][9];
 
-        void JuRule(int row, int col, std::vector<ChessMove> *moves);
+        void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void PaoRule(int row, int col, std::vector<ChessMove> *moves);
+        void PaoRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void MaRule(int row, int col, std::vector<ChessMove> *moves);
+        void MaRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void XiangRule(int row, int col, std::vector<ChessMove> *moves);
+        void XiangRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void ShiRule(int row, int col, std::vector<ChessMove> *moves);
+        void ShiRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void WangRule(int row, int col, std::vector<ChessMove> *moves);
+        void WangRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        void BingRule(int row, int col, std::vector<ChessMove> *moves);
+        void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
 
     public:
         ChessBoard();
 
-        void GetMoves(std::vector<ChessMove> *moves);
+        void GetMoves(std::vector<ChessMove> *moves) const;
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
@@ -80,12 +80,14 @@ namespace CChess {
 
         void initBoard();
 
-        bool SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
+        void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
         void ParseFromString(const std::string &str); //json字符串
         std::string ToString() const;
 
         void PrintOnTerminal();
+
+        void PrintMoves(std::vector<ChessMove> *moves) const;
 
     };
 }
