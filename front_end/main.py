@@ -36,12 +36,16 @@ class Chess(pygame.sprite.Sprite):
        pygame.sprite.Sprite.__init__(self)
        
        self.image = pygame.image.load(os.path.join("image",Color2Str(color)+'-'+Type2Str(type)+".png"))
-       bias=30
-       begin_x=40
-       begin_y=45
+       bias=27
+       begin_x=70
+       begin_y=70
        self.rect = self.image.get_rect()
-       self.rect.x=begin_x+60*col-bias
-       self.rect.y=begin_y+60*row-bias
+       self.rect.x=begin_x+54*col-bias
+       self.rect.y=begin_y+54*row-bias
+
+       mask = pygame.mask.from_surface(self.image)
+       outline = mask.outline()
+       pygame.draw.polygon(self.image, (217, 175, 111, 0), outline, 7)
 
        
 
