@@ -53,27 +53,17 @@ class Chess:
         type_str = types[self.type.value]
         return os.path.join("image", f"{color}-{type_str}.png")
 
-
-class ChessSprite(pygame.sprite.Sprite):
-
-    # Constructor. Pass in the color of the block,
-    # and its x and y position
-    def __init__(self, chess: Chess, row, col):
-        assert chess.type != ChessType.Empty
-        # Call the parent class (Sprite) constructor
-        pygame.sprite.Sprite.__init__(self)
-
-        self.image = SurfaceCache().load(chess.get_image_file_name())
+    def draw(self, surface, row, col):
+        if self.type == ChessType.Empty:
+            return
+        image = SurfaceCache().load(self.get_image_file_name())
+        rect = image.get_rect()
         bias = 27
         begin_x = 70
         begin_y = 70
-        self.rect = self.image.get_rect()
-        self.rect.x = begin_x + 54 * col - bias
-        self.rect.y = begin_y + 54 * row - bias
-
-        mask = pygame.mask.from_surface(self.image)
-        outline = mask.outline()
-        pygame.draw.polygon(self.image, (217, 175, 111, 0), outline, 7)
+        rect.x = begin_x + 54 * col - bias
+        rect.y = begin_y + 54 * row - bias
+        surface.blit(image, rect)
 
 
 class ChessBoard:
@@ -85,12 +75,36 @@ class ChessBoard:
                 temp.append(Chess(ChessType.Empty, False))
             self.board.append(temp)
 
-    def to_sprite_group(self):
-        chess_group = pygame.sprite.Group()
+    def draw(self, surface):
         for i in range(10):
             for j in range(9):
                 chess = self.board[i][j]
-                if chess.type != ChessType.Empty:
-                    # noinspection PyTypeChecker
-                    chess_group.add(ChessSprite(chess, i, j))
-        return chess_group
+                chess.draw(surface, i, j)
+
+    def get_chess(self, row, col):
+        return self.board[row][col]
+
+    def set_chess(self, row, col, chess):
+        self.board[row][col] = chess
+
+    def __contains__(self, chess):
+        for i in range(10):
+            for j in range(9):
+                if self.board[i][j] == chess:
+                    return True
+        return False
+
+    def __iter__(self):
+        for i in range(10):
+            for j in range(9):
+                yield i, j, self.board[i][j]
+
+    @staticmethod
+    def pixi_to_chess(pixel_x, pixel_y):
+        begin_x = 70
+        begin_y = 70
+        cell_size = 54
+        bias = cell_size // 2
+        col = (pixel_x - begin_x + bias) // cell_size
+        row = (pixel_y - begin_y + bias) // cell_size
+        return row, col
