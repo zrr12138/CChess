@@ -44,6 +44,7 @@ class Chess:
     begin_y = 70
     cell_size = 54
     bias = cell_size // 2
+
     def __init__(self, type: ChessType, is_red):
         self.type = type
         self.is_red = is_red
@@ -75,18 +76,25 @@ class ChessBoard:
             for j in range(9):
                 temp.append(Chess(ChessType.Empty, False))
             self.board.append(temp)
+        self.image = pygame.image.load(os.path.join("image", "chessboardafter.png"))
+        self.rect = self.image.get_rect()
 
     def draw(self, surface):
+        board = self.image.copy()
         for i in range(10):
             for j in range(9):
                 chess = self.board[i][j]
-                chess.draw(surface, i, j)
+                chess.draw(board, i, j)
+        surface.blit(board, pygame.Rect(0, 0, self.rect.width, self.rect.height))
 
     def get_chess(self, row, col):
         return self.board[row][col]
 
     def set_chess(self, row, col, chess):
         self.board[row][col] = chess
+
+    def clear_chess(self, row, col):
+        self.board[row][col].type = ChessType.Empty
 
     def __contains__(self, chess):
         for i in range(10):
@@ -106,3 +114,10 @@ class ChessBoard:
         row = (pixel_y - Chess.begin_y + Chess.bias) // Chess.cell_size
         return row, col
 
+
+class Move:
+    def __init__(self, start_x, start_y, end_x, end_y):
+        self.start_x = start_x
+        self.start_y = start_y
+        self.end_x = end_x
+        self.end_y = end_y
