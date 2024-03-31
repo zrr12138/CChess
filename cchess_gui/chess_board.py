@@ -40,6 +40,10 @@ class BoardResult(IntEnum):
 
 
 class Chess:
+    begin_x = 70
+    begin_y = 70
+    cell_size = 54
+    bias = cell_size // 2
     def __init__(self, type: ChessType, is_red):
         self.type = type
         self.is_red = is_red
@@ -58,11 +62,8 @@ class Chess:
             return
         image = SurfaceCache().load(self.get_image_file_name())
         rect = image.get_rect()
-        bias = 27
-        begin_x = 70
-        begin_y = 70
-        rect.x = begin_x + 54 * col - bias
-        rect.y = begin_y + 54 * row - bias
+        rect.x = Chess.begin_x + Chess.cell_size * col - Chess.bias
+        rect.y = Chess.begin_y + Chess.cell_size * row - Chess.bias
         surface.blit(image, rect)
 
 
@@ -101,10 +102,7 @@ class ChessBoard:
 
     @staticmethod
     def pixi_to_chess(pixel_x, pixel_y):
-        begin_x = 70
-        begin_y = 70
-        cell_size = 54
-        bias = cell_size // 2
-        col = (pixel_x - begin_x + bias) // cell_size
-        row = (pixel_y - begin_y + bias) // cell_size
+        col = (pixel_x - Chess.begin_x + Chess.bias) // Chess.cell_size
+        row = (pixel_y - Chess.begin_y + Chess.bias) // Chess.cell_size
         return row, col
+
