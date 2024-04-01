@@ -55,9 +55,12 @@ namespace CChess {
     private:
         Chess board[10][9];
 
+        bool board_red;
         int is_end;
         bool is_init;
         int move_num;
+
+        void update_is_end_from(ChessMove move); // 判断局面是否结束
 
         void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
 
@@ -76,13 +79,15 @@ namespace CChess {
     public:
         ChessBoard();
 
+        void BoardRed(bool is_red);
+
         void GetMoves(std::vector<ChessMove> *moves) const;
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
         Chess GetChessAt(int x, int y) const;
 
-        bool Move(const ChessMove &move);
+        bool Move(const ChessMove &move, std::vector<Chess> *dead);
 
         BoardResult End() const;
 
@@ -99,6 +104,9 @@ namespace CChess {
 
         void PrintMoves(std::vector<ChessMove> *moves) const;
 
+        void PrintDead(std::vector<Chess> *deads) const;
+
+        bool Legal() const;
     };
 }
 

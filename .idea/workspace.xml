@@ -22,8 +22,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="58306837-85d3-4720-9feb-3b2e12cd9896" name="Changes" comment="修复棋子bug">
+    <list default="true" id="58306837-85d3-4720-9feb-3b2e12cd9896" name="Changes" comment="增加End()和GetMobesFrom函数,修改Empty函数">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/ChessBoard.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/engine/ChessBoard.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/engine/ChessBoard.h" beforeDir="false" afterPath="$PROJECT_DIR$/engine/ChessBoard.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine/ChessBoradTest.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/engine/ChessBoradTest.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,6 +41,16 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="ROOT_SYNC" value="DONT_SYNC" />
+  </component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="实现GetMove函数，但未解决程序崩溃问题" />
+        <option name="rewordedMessage" value="实现GetMove函数" />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="30a0bb08ff9ee7322167c8b2ac5598efe97869bc" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -88,11 +100,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="server" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CChess" TARGET_NAME="server" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="CChess" RUN_TARGET_NAME="server">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -121,7 +128,9 @@
       <workItem from="1711328868927" duration="19341000" />
       <workItem from="1711416274020" duration="19422000" />
       <workItem from="1711438982026" duration="10507000" />
-      <workItem from="1711497486463" duration="8289000" />
+      <workItem from="1711497486463" duration="11650000" />
+      <workItem from="1711931003671" duration="4555000" />
+      <workItem from="1711938204066" duration="27475000" />
     </task>
     <task id="LOCAL-00001" summary="实现后三个函数">
       <option name="closed" value="true" />
@@ -179,7 +188,15 @@
       <option name="project" value="LOCAL" />
       <updated>1711505609661</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="增加End()和GetMobesFrom函数,修改Empty函数">
+      <option name="closed" value="true" />
+      <created>1711510929194</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1711510929194</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -220,6 +237,7 @@
     <MESSAGE value="ChessBoard()函数" />
     <MESSAGE value="修复了ChessBoard函数,并且修改GetMove内部函数的调用" />
     <MESSAGE value="修复棋子bug" />
-    <option name="LAST_COMMIT_MESSAGE" value="修复棋子bug" />
+    <MESSAGE value="增加End()和GetMobesFrom函数,修改Empty函数" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加End()和GetMobesFrom函数,修改Empty函数" />
   </component>
 </project>
