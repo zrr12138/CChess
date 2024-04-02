@@ -294,9 +294,8 @@ namespace CChess {
             dead->emplace_back(chess);
         }
         is_init = false;
-        std::cout << is_end << std::endl;
         update_is_end_from(move);
-        assert(is_end == 2);
+        assert(is_end == NOT_END);
         move_num++;
         return true;
     }
@@ -315,7 +314,7 @@ namespace CChess {
     }
 
     void ChessBoard::ClearBoard() {
-        is_end = 2;
+        is_end = NOT_END;
         move_num = 0;
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
@@ -477,9 +476,9 @@ namespace CChess {
         //auto &chess = board[move.end_x][move.end_y];
         if (board[move.end_x][move.end_y].type == Wang) {
             if (board[move.end_x][move.end_y].is_red) {
-                is_end = 1;
+                is_end = BLACK_WIN;
             } else {
-                is_end = 0;
+                is_end = RED_WIN;
             }
         }
         board[move.end_x][move.end_y] = board[move.start_x][move.start_y];
@@ -496,116 +495,455 @@ namespace CChess {
         }
     }
 
-    bool legal_shi(int i, int j) {
-        if (j == 4) {
-            if(i == 0 || i == 2 || i == 7 || i ==9)
-                return false;
-        } else if (j == 3) {
-            if (i == 1 || i == 8)
-                return false;
-        } else if (j == 5) {
-            if (i == 1 || i == 8)
-                return false;
-        }
-        return true;
-    }
-
-    bool ChessBoard::Legal() const {
-        int num_rema = 0;
-        int num_reju = 0;
-        int num_repao = 0;
-        int num_rexiang = 0;
-        int num_reshi = 0;
-        int num_rebing = 0;
-        int num_rewang = 0;
-        int num_bama = 0;
-        int num_baju = 0;
-        int num_bapao = 0;
-        int num_baxiang = 0;
-        int num_bashi = 0;
-        int num_babing = 0;
-        int num_bawang = 0;
+    std::string ChessBoard::Legal() const {
+        std::string jieguo;
+        int num_qizi[7][2] = {0}; //0:Ju  1:Ma  2:Shi  3:Pao 4:Xiang 5:Wang 6:Bing
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
                 switch (board[i][j].type) {
                     case Ju:
                         if (board[i][j].is_red)
-                            num_reju++;
+                            num_qizi[0][0]++;
                         else
-                            num_baju++;
+                            num_qizi[0][1]++;
                         break;
                     case Wang:
                         if (board[i][j].is_red)
-                            num_rewang++;
+                            num_qizi[5][0]++;
                         else
-                            num_bawang++;
+                            num_qizi[5][1]++;
                         break;
                     case Ma:
                         if (board[i][j].is_red)
-                            num_rema++;
+                            num_qizi[1][0]++;
                         else
-                            num_bama++;
+                            num_qizi[1][1]++;
                         break;
                     case Bing:
                         if (board[i][j].is_red)
-                            num_rebing++;
+                            num_qizi[6][0]++;
                         else
-                            num_babing++;
+                            num_qizi[6][1]++;
                         break;
                     case Shi:
                         if (board[i][j].is_red)
-                            num_reshi++;
+                            num_qizi[2][0]++;
                         else
-                            num_bashi++;
+                            num_qizi[2][1]++;
                         break;
                     case Pao:
                         if (board[i][j].is_red)
-                            num_repao++;
+                            num_qizi[3][0]++;
                         else
-                            num_bapao++;
+                            num_qizi[3][1]++;
                         break;
                     case Xiang:
                         if (board[i][j].is_red)
-                            num_rexiang++;
+                            num_qizi[4][0]++;
                         else
-                            num_baxiang++;
+                            num_qizi[4][1]++;
                         break;
                     default:
                         break;
                 }
             }
-        }
-        if (num_reju > 2 || num_baju > 2 || num_bama > 2 || num_rema > 2 || num_repao > 2 || num_bapao > 2) {
-            return false;
         }
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
                 switch (board[i][j].type) {
                     case Wang:
-
+                        if ((3 <= j && j < 7) && ((0 <= i && i < 3) || 6 < i)) {
+                            jieguo = "Legal";
+                        } else {
+                            jieguo = "王越界";
+                            return jieguo;
+                        }
                         break;
                     case Bing:
+                        if (board_red) {
+                            if (board[i][j].is_red) {
+                                if (i == 5 || i == 6) {
+                                    if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
+                                        jieguo = "Legal";
+                                    } else {
+                                        jieguo = "红兵越界";
+                                        return jieguo;
+                                    }
+                                } else if (0 <= i && i < 5) {
+                                    jieguo = "Legal";
+                                } else {
+                                    jieguo = "红兵越界";
+                                    return jieguo;
+                                }
+                            } else {
+                                if (i == 3 || i == 4) {
+                                    if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
+                                        jieguo = "Legal";
+                                    } else {
+                                        jieguo = "黑卒越界";
+                                        return jieguo;
+                                    }
+                                } else if (5 <= i) {
+                                    jieguo = "Legal";
+                                } else {
+                                    jieguo = "黑卒越届";
+                                    return jieguo;
+                                }
+                            }
+                        } else {
+                            if (!board[i][j].is_red) {
+                                if (i == 5 || i == 6) {
+                                    if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
+                                        jieguo = "Legal";
+                                    } else {
+                                        jieguo = "黑卒越界";
+                                        return jieguo;
+                                    }
+                                } else if (0 <= i && i < 5) {
+                                    jieguo = "Legal";
+                                } else {
+                                    jieguo = "黑卒越界";
+                                    return jieguo;
+                                }
+                            } else {
+                                if (i == 3 || i == 4) {
+                                    if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
+                                        jieguo = "Legal";
+                                    } else {
+                                        jieguo = "红兵越界";
+                                        return jieguo;
+                                    }
+                                } else if (5 <= i) {
+                                    jieguo = "Legal";
+                                } else {
+                                    jieguo = "红兵越界";
+                                    return jieguo;
+                                }
+                            }
+                        }
                         break;
                     case Shi:
-                        if (j == 4) {
-                            if(i == 0 || i == 2 || i == 7 || i ==9)
-                                return false;
-                        } else if (j == 3) {
+                        if (j == 3 || j == 5) {
+                            if(i == 0 || i == 2 || i == 7 || i == 9)
+                                jieguo = "Legal";
+                            else {
+                                jieguo = "士越界";
+                                return jieguo;
+                            }
+                        } else if (j == 4) {
                             if (i == 1 || i == 8)
-                                return false;
-                        } else if (j == 5) {
-                            if (i == 1 || i == 8)
-                                return false;
+                                jieguo = "Legal";
+                            else {
+                                jieguo = "士越界";
+                                return jieguo;
+                            }
+                        } else {
+                            jieguo = "士越界";
+                            return jieguo;
                         }
                         break;
                     case Xiang:
+                        if (j == 0 || j == 8) {
+                            if (i == 2 || i == 7)
+                                jieguo = "Legal";
+                            else {
+                                jieguo = "象越界";
+                                return jieguo;
+                            }
+                        } else if (j == 2 || j == 6) {
+                            if (i == 0 || i == 4 || i == 5 || i == 9)
+                                jieguo = "Legal";
+                            else {
+                                jieguo = "象越界";
+                                return jieguo;
+                            }
+                        } else {
+                            jieguo = "象越界";
+                            return jieguo;
+                        }
                         break;
                     default:
                         break;
                 }
             }
         }
-        return true;
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 2; j++) {
+                if (num_qizi[i][j] > 2) {
+                    if (j == 0) {
+                        switch (i) {
+                            case 0:
+                                jieguo = "红车数量超过";
+                                return jieguo;
+                            case 1:
+                                jieguo = "红马数量超过";
+                                return jieguo;
+                            case 2:
+                                jieguo = "红士数量超过";
+                                return jieguo;
+                            case 3:
+                                jieguo = "红炮数量超过";
+                                return jieguo;
+                            case 4:
+                                jieguo = "红相数量超过";
+                                return jieguo;
+                            default:
+                                break;
+                        }
+                    } else {
+                        switch (i) {
+                            case 0:
+                                jieguo = "红车数量超过";
+                                return jieguo;
+                            case 1:
+                                jieguo = "红马数量超过";
+                                return jieguo;
+                            case 2:
+                                jieguo = "红士数量超过";
+                                return jieguo;
+                            case 3:
+                                jieguo = "红炮数量超过";
+                                return jieguo;
+                            case 4:
+                                jieguo = "红相数量超过";
+                                return jieguo;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        if (num_qizi[5][0] > 1) {
+            jieguo = "帅数量超过";
+            return jieguo;
+        } else if (num_qizi[5][1] > 1) {
+            jieguo = "黑将数量超过";
+            return jieguo;
+        } else if (num_qizi[6][0] > 5) {
+            jieguo = "红兵数量超过";
+            return jieguo;
+        } else if (num_qizi[6][1] > 5) {
+            jieguo = "黑卒数量超过";
+            return jieguo;
+        }
+        return jieguo;
+    }
+
+    void ChessBoard::ChessConversion(const ChessMove &move, std::vector<std::string> *QiPu) {
+        std::string Con;
+        switch (board[move.start_x][move.start_y].type) {
+            case Wang:
+                if (board[move.start_x][move.start_y].is_red) {
+                    Con = "帅";
+                } else {
+                    Con = "将";
+                }
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Ma:
+                Con = "马";
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Bing:
+                if (board[move.start_x][move.start_y].is_red) {
+                    Con = "兵";
+                } else {
+                    Con = "将卒";
+                }
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Shi:
+                if (board[move.start_x][move.start_y].is_red) {
+                    Con = "士";
+                } else {
+                    Con = "仕";
+                }
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Ju:
+                Con = "车";
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Pao:
+                Con = "炮";
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+            case Xiang:
+                if (board[move.start_x][move.start_y].is_red) {
+                    Con = "相";
+                } else {
+                    Con = "象";
+                }
+                Con = Conversion(move,Con);
+                QiPu->emplace_back(Con);
+                break;
+        }
+    }
+
+    std::string ChessBoard::Conversion(const ChessMove &move, std::string conversion) {
+        std::string Rename1;
+        std::string Baname1;
+        std::string Rename2;
+        std::string Baname2;
+        std::string Rename3;
+        std::string Baname3;
+        switch (move.start_y) {
+            case 0:
+                Rename1 = "九";
+                Baname1 = "1";
+                break;
+            case 1:
+                Rename1 = "八";
+                Baname1 = "2";
+                break;
+            case 2:
+                Rename1 = "七";
+                Baname1 = "3";
+                break;
+            case 3:
+                Rename1 = "六";
+                Baname1 = "4";
+                break;
+            case 4:
+                Rename1 = "五";
+                Baname1 = "5";
+                break;
+            case 5:
+                Rename1 = "四";
+                Baname1 = "6";
+                break;
+            case 6:
+                Rename1 = "三";
+                Baname1 = "7";
+                break;
+            case 7:
+                Rename1 = "二";
+                Baname1 = "8";
+                break;
+            case 8:
+                Rename1 = "一";
+                Baname1 = "9";
+                break;
+            default:
+                break;
+        }
+        switch (abs(move.start_x - move.end_x)) {
+            case 9:
+                Rename2 = "九";
+                Baname2 = "9";
+                break;
+            case 8:
+                Rename2 = "八";
+                Baname2 = "8";
+                break;
+            case 7:
+                Rename2 = "七";
+                Baname2 = "7";
+                break;
+            case 6:
+                Rename2 = "六";
+                Baname2 = "6";
+                break;
+            case 5:
+                Rename2 = "五";
+                Baname2 = "5";
+                break;
+            case 4:
+                Rename2 = "四";
+                Baname2 = "4";
+                break;
+            case 3:
+                Rename2 = "三";
+                Baname2 = "3";
+                break;
+            case 2:
+                Rename2 = "二";
+                Baname2 = "2";
+                break;
+            case 1:
+                Rename2 = "一";
+                Baname2 = "1";
+                break;
+            default:
+                break;
+        }
+        switch (move.end_y) {
+            case 0:
+                Rename3 = "九";
+                Baname3 = "1";
+                break;
+            case 1:
+                Rename3 = "八";
+                Baname3 = "2";
+                break;
+            case 2:
+                Rename3 = "七";
+                Baname3 = "3";
+                break;
+            case 3:
+                Rename3 = "六";
+                Baname3 = "4";
+                break;
+            case 4:
+                Rename3 = "五";
+                Baname3 = "5";
+                break;
+            case 5:
+                Rename3 = "四";
+                Baname3 = "6";
+                break;
+            case 6:
+                Rename3 = "三";
+                Baname3 = "7";
+                break;
+            case 7:
+                Rename3 = "二";
+                Baname3 = "8";
+                break;
+            case 8:
+                Rename3 = "一";
+                Baname3 = "9";
+                break;
+            default:
+                break;
+        }
+        if (board[move.start_x][move.start_y].is_red) {
+            if (move.start_x > move.end_x) {
+                conversion += Rename1;
+                conversion += "进";
+                conversion += Rename2;
+            } else if (move.start_x < move.end_x) {
+                conversion += Rename1;
+                conversion += "退";
+                conversion += Rename2;
+            } else {
+                conversion += Rename1;
+                conversion += "平";
+                conversion += Rename3;
+            }
+        } else {
+            if (move.start_x > move.end_x) {
+                conversion += Baname1;
+                conversion += "退";
+                conversion += Baname2;
+            } else if (move.start_x < move.end_x) {
+                conversion += Baname1;
+                conversion += "进";
+                conversion += Baname2;
+            } else {
+                conversion += Baname1;
+                conversion += "平";
+                conversion += Baname3;
+            }
+        }
+        return conversion;
     }
 
 

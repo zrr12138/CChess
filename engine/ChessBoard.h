@@ -56,7 +56,7 @@ namespace CChess {
         Chess board[10][9];
 
         bool board_red;
-        int is_end;
+        BoardResult is_end;
         bool is_init;
         int move_num;
 
@@ -75,6 +75,8 @@ namespace CChess {
         void WangRule(int row, int col, std::vector<ChessMove> *moves) const;
 
         void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
+
+        std::string Conversion(const ChessMove &move, std::string conversion);
 
     public:
         ChessBoard();
@@ -97,7 +99,10 @@ namespace CChess {
 
         void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
+        void ChessConversion (const ChessMove &move, std::vector<std::string> *Con);
+
         void ParseFromString(const std::string &str); //json字符串
+
         std::string ToString() const;
 
         void PrintOnTerminal();
@@ -106,7 +111,7 @@ namespace CChess {
 
         void PrintDead(std::vector<Chess> *deads) const;
 
-        bool Legal() const;
+        std::string Legal() const;
     };
 }
 
