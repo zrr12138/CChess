@@ -93,11 +93,16 @@ void test5() {
 
 void test6() {
     ChessBoard board;
+    board.BoardRed(true);
     board.initBoard();
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
+    std::vector<std::string> QiPu;
     board.GetMovesFrom(7, 1, &moves);
+    board.ChessConversion(ChessMove(7, 1, 0, 1), &QiPu);
     board.Move(ChessMove(7, 1, 0, 1),&dead);
+    assert(QiPu.size() == 1);
+    assert(std::find(QiPu.begin(),QiPu.end(),"炮八进七") != QiPu.end());
     assert(dead.size() == 1);
 
 }
@@ -115,12 +120,32 @@ void test7() {
     //board.SetChessAt(Chess(ChessType::Ma, true), 6,3);
     assert(board.Legal() == "Legal");
 }
+
+void test8() {
+    ChessBoard board;
+    board.ClearBoard();
+    board.BoardRed(true);
+    board.SetChessAt(Chess(ChessType::Wang, false), 7, 4);
+    board.SetChessAt(Chess(ChessType::Shi, true), 7,5);
+    board.SetChessAt(Chess(ChessType::Bing, false), 1, 1);
+    board.SetChessAt(Chess(ChessType::Shi, true), 1,4);
+    board.SetChessAt(Chess(ChessType::Xiang, true), 4,2);
+    board.SetChessAt(Chess(ChessType::Ma, true), 2,3);
+    std::cout << board.ToString() << std::endl;
+    board.ParseFromString(board.ToString());
+    board.PrintOnTerminal();
+}
+
+void test9() {
+
+}
 int main(int argc, char *argv[]) {
     test1();
-    //test2();
-    //test3();
-    //test4();
-    //test5();
-    //test6();
-    //test7();
+    test2();
+    test3();
+    test4();
+    test5();
+    test6();
+    test7();
+    //test8();
 }
