@@ -417,11 +417,113 @@ namespace CChess {
     }
 
     void ChessBoard::ParseFromString(const std::string &str) {
-
+        for (int i = 0; i < str.length(); i++) {
+            switch (str[i]) {
+                case '*':
+                    board[i / 9][i % 9].type = Empty;
+                    break;
+                case 'a':
+                    board[i / 9][i % 9] = Chess(ChessType::Wang, true);
+                    break;
+                case 'A':
+                    board[i / 9][i % 9] = Chess(ChessType::Wang, false);
+                    break;
+                case 'b':
+                    board[i / 9][i % 9] = Chess(ChessType::Ma, true);
+                    break;
+                case 'B':
+                    board[i / 9][i % 9] = Chess(ChessType::Ma, false);
+                    break;
+                case 'c':
+                    board[i / 9][i % 9] = Chess(ChessType::Bing, true);
+                    break;
+                case 'C':
+                    board[i / 9][i % 9] = Chess(ChessType::Bing, false);
+                    break;
+                case 'd':
+                    board[i / 9][i % 9] = Chess(ChessType::Shi, true);
+                    break;
+                case 'D':
+                    board[i / 9][i % 9] = Chess(ChessType::Shi, false);
+                    break;
+                case 'e':
+                    board[i / 9][i % 9] = Chess(ChessType::Ju, true);
+                    break;
+                case 'E':
+                    board[i / 9][i % 9] = Chess(ChessType::Ju, false);
+                    break;
+                case 'f':
+                    board[i / 9][i % 9] = Chess(ChessType::Pao, true);
+                    break;
+                case 'F':
+                    board[i / 9][i % 9] = Chess(ChessType::Pao, false);
+                    break;
+                case 'g':
+                    board[i / 9][i % 9] = Chess(ChessType::Xiang, true);
+                    break;
+                case 'G':
+                    board[i / 9][i % 9] = Chess(ChessType::Xiang, false);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     std::string ChessBoard::ToString() const {
-        return std::string();
+        std::string str;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                switch (board[i][j].type) {
+                    case Empty:
+                        str += "*";
+                        break;
+                    case Wang:
+                        if (board[i][j].is_red)
+                            str += "a";
+                        else
+                            str += "A";
+                        break;
+                    case Ma:
+                        if (board[i][j].is_red)
+                            str += "b";
+                        else
+                            str += "B";
+                        break;
+                    case Bing:
+                        if (board[i][j].is_red)
+                            str += "c";
+                        else
+                            str += "C";
+                        break;
+                    case Shi:
+                        if (board[i][j].is_red)
+                            str += "d";
+                        else
+                            str += "D";
+                        break;
+                    case Ju:
+                        if (board[i][j].is_red)
+                            str += "e";
+                        else
+                            str += "E";
+                        break;
+                    case Pao:
+                        if (board[i][j].is_red)
+                            str += "f";
+                        else
+                            str += "F";
+                        break;
+                    case Xiang:
+                        if (board[i][j].is_red)
+                            str += "g";
+                        else
+                            str += "G";
+                        break;
+                }
+            }
+        }
+        return str;
     }
 
     void ChessBoard::PrintOnTerminal() {
