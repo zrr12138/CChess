@@ -25,7 +25,6 @@ namespace CChess {
         int end_x;
         int end_y;
         ChessMove(int startX, int startY, int endX, int endY);
-
         bool operator==(const ChessMove &rhs) const;
 
         bool operator!=(const ChessMove &rhs) const;
@@ -62,6 +61,8 @@ namespace CChess {
 
         void update_is_end_from(ChessMove move); // 判断局面是否结束
 
+        void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
+
         void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
 
         void PaoRule(int row, int col, std::vector<ChessMove> *moves) const;
@@ -83,7 +84,7 @@ namespace CChess {
 
         void BoardRed(bool is_red);
 
-        void GetMoves(std::vector<ChessMove> *moves) const;
+        void GetMoves(bool is_red, std::vector<ChessMove> *moves) const;
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
@@ -99,7 +100,7 @@ namespace CChess {
 
         void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
-        void ChessConversion (const ChessMove &move, std::vector<std::string> *Con);
+        void MoveConversion (const ChessMove &move, std::string *Con);
 
         void ParseFromString(const std::string &str); //json字符串
 
@@ -109,9 +110,13 @@ namespace CChess {
 
         void PrintMoves(std::vector<ChessMove> *moves) const;
 
-        void PrintDead(std::vector<Chess> *deads) const;
+        void GetDeadChess(std::vector<Chess> *deads) const;
 
-        std::string Legal() const;
+        bool IsLegal(std::string *errorMessage) const;
+
+        bool RandMove(ChessMove &move) const;
+
+        bool RandMove2(ChessMove &move) const;
     };
 }
 
