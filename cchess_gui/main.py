@@ -18,77 +18,75 @@ ctx = Context()
 ctx.board.set_chess(1, 1, Chess(ChessType.Pao, True))
 
 
+def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
+    if event.button == 3 and ctx.status == Status.PLACE:
+        ctx.board.clear_chess(x, y)
+    if event.button == 1:
+        if ctx.choose_pos is None:
+            ctx.choose_pos = (x, y)
+        else:
+            end_chess = ctx.board.get_chess(x, y)
+            start_chess = ctx.board.get_chess(ctx.choose_pos[0], ctx.choose_pos[1])
+            if start_chess.type != ChessType.Empty and end_chess.type == ChessType.Empty:
+                if ctx.status != Status.PLACE:
+                    # 判断可行性
+                    pass
+                ctx.board.set_chess(x, y, start_chess)
+                ctx.board.clear_chess(ctx.choose_pos[0], ctx.choose_pos[1])
+            else:
+                ctx.choose_pos = (x, y)
+
+
+def handle_key_down(ctx, event):
+    if ctx.status == Status.SEARCHING:
+        if event.key == pygame.K_d:
+            pass
+        elif event.key == pygame.K_m:
+            pass
+    elif ctx.status == Status.PAUSE:
+        if event.key == pygame.K_s:
+            pass
+        elif event.key == pygame.K_r:
+            pass
+        elif event.key == pygame.K_p:
+            ctx.status = Status.PLACE
+        elif event.key == pygame.K_i:
+            pass
+    elif ctx.status == Status.PLACE:
+        chess_type = None
+        if event.key == pygame.K_w:
+            chess_type = ChessType.Wang
+        elif event.key == pygame.K_m:
+            chess_type = ChessType.Ma
+        elif event.key == pygame.K_b:
+            chess_type = ChessType.Bing
+        elif event.key == pygame.K_s:
+            chess_type = ChessType.Shi
+        elif event.key == pygame.K_j:
+            chess_type = ChessType.Ju
+        elif event.key == pygame.K_p:
+            chess_type = ChessType.Pao
+        elif event.key == pygame.K_x:
+            chess_type = ChessType.Xiang
+        if chess_type is not None:
+            is_red = ctx.place_red
+            mouse_pos = pygame.mouse.get_pos()
+            x, y = ChessBoard.pixi_to_chess(mouse_pos[0], mouse_pos[1])
+            ctx.board.set_chess(x, y, Chess(chess_type, is_red))
+        if event.key == pygame.K_TAB:
+            ctx.place_red = not ctx.place_red
+        if event.key == pygame.K_d:
+            ctx.status = Status.PAUSE
+
+
 def handle_event(ctx: Context, event: pygame.event.Event):
     if event.type == pygame.MOUSEBUTTONDOWN:
         mouse_pos = pygame.mouse.get_pos()
         x, y = ChessBoard.pixi_to_chess(mouse_pos[0], mouse_pos[1])
-        print(x, y)
-        # 鼠标右键
-        if event.button == 3 and ctx.status == Status.PLACE:
-            print("here")
-            ctx.board.clear_chess(x, y)
-        if event.button == 1:
-            if ctx.choose_pos is None:
-                ctx.choose_pos = (x, y)
-            else:
-                if ctx.status == Status.PLACE:
-                    # TODO(zrr) chess 默认是引用赋值
-                    chess=ctx.board.get_chess(ctx.choose_pos[0], ctx.choose_pos[1])
-                    print(chess)
-                    ctx.board.set_chess(x, y, chess)
-                    ctx.board.clear_chess(ctx.choose_pos[0], ctx.choose_pos[1])
-                    ctx.choose_pos = None
-                else:
-                    move = Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y)
-                    pass
-                    # 如果不可移动，应该选中新的点
-
+        if 0 <= x <= 10 and 0 <= y <= 9:
+            handle_chess_board_mouse_button_down(ctx, event, x, y)
     if event.type == pygame.KEYDOWN:
-        if ctx.status == Status.SEARCHING:
-            if event.key == pygame.K_d:
-                pass
-            elif event.key == pygame.K_m:
-                pass
-        elif ctx.status == Status.PAUSE:
-            if event.key == pygame.K_s:
-                pass
-            elif event.key == pygame.K_r:
-                pass
-            elif event.key == pygame.K_p:
-                ctx.status = Status.PLACE
-            elif event.key == pygame.K_i:
-                pass
-        elif ctx.status == Status.PLACE:
-            chess_type = None
-            if event.key == pygame.K_w:
-                chess_type = ChessType.Wang
-            elif event.key == pygame.K_m:
-                chess_type = ChessType.Ma
-            elif event.key == pygame.K_b:
-                chess_type = ChessType.Bing
-            elif event.key == pygame.K_s:
-                chess_type = ChessType.Shi
-            elif event.key == pygame.K_j:
-                chess_type = ChessType.Ju
-            elif event.key == pygame.K_p:
-                chess_type = ChessType.Pao
-            elif event.key == pygame.K_x:
-                chess_type = ChessType.Xiang
-            if chess_type is not None:
-                is_red = ctx.place_red
-                mouse_pos = pygame.mouse.get_pos()
-                x, y = ChessBoard.pixi_to_chess(mouse_pos[0], mouse_pos[1])
-                ctx.board.set_chess(x, y, Chess(chess_type, is_red))
-            if event.key == pygame.K_TAB:
-                ctx.place_red = not ctx.place_red
-            if event.key == pygame.K_d:
-                ctx.status = Status.PAUSE
-
-        #
-        # elif ctx.status == Status.PAUSE:
-        #
-        # elif ctx.status == Status.PLACE:
-
+        handle_key_down(ctx, event)
     if event.type == pygame.QUIT:
         ctx.running = False
 

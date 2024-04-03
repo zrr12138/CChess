@@ -2,6 +2,7 @@ import os
 from enum import IntEnum
 import pygame
 from surface_cache import SurfaceCache
+import copy
 
 
 class ChessType(IntEnum):
@@ -88,10 +89,10 @@ class ChessBoard:
         surface.blit(board, pygame.Rect(0, 0, self.rect.width, self.rect.height))
 
     def get_chess(self, row, col):
-        return self.board[row][col]
+        return copy.deepcopy(self.board[row][col])
 
     def set_chess(self, row, col, chess):
-        self.board[row][col] = chess
+        self.board[row][col] = copy.deepcopy(chess)
 
     def clear_chess(self, row, col):
         self.board[row][col].type = ChessType.Empty
@@ -121,3 +122,6 @@ class Move:
         self.start_y = start_y
         self.end_x = end_x
         self.end_y = end_y
+
+    def __le__(self, rhs):
+        return self.start_x <= rhs.start_x and self.start_y <= rhs.start_y and self.end_x <= rhs.end_x and self.end_y <= rhs.end_y
