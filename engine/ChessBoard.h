@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <ostream>
 
 namespace CChess {
     enum ChessType {
@@ -25,10 +26,16 @@ namespace CChess {
         int start_y;
         int end_x;
         int end_y;
+
+        ChessMove()=default;
+
         ChessMove(int startX, int startY, int endX, int endY);
+
         bool operator==(const ChessMove &rhs) const;
 
         bool operator!=(const ChessMove &rhs) const;
+
+        friend std::ostream &operator<<(std::ostream &os, const ChessMove &move);
     };
     enum BoardResult {
         RED_WIN = 0,

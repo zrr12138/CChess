@@ -1335,4 +1335,11 @@ namespace CChess {
 
     ChessMove::ChessMove(int startX, int startY, int endX, int endY): start_x(startX), start_y(startY), end_x(endX),
     end_y(endY) {}
+
+    std::ostream &operator<<(std::ostream &os, const ChessMove &move) {
+        os << "start_x: " << move.start_x << " start_y: " << move.start_y << " end_x: " << move.end_x << " end_y: "
+           << move.end_y;
+        return os;
+    }
+
 }
