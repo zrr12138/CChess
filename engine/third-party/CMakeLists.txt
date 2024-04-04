@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.6)
+set(BUILD_TESTING OFF CACHE BOOL "")
+set(WITH_GFLAGS OFF CACHE BOOL "")
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "")
+add_subdirectory(glog)
+add_subdirectory(gflags)
