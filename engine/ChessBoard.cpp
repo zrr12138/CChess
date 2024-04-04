@@ -286,16 +286,13 @@ namespace CChess {
         return {board[x][y].type, board[x][y].is_red};
     }
 
-    bool ChessBoard::Move(const ChessMove &move, std::vector<Chess> *dead) {
+    bool ChessBoard::Move(const ChessMove &move) {
         assert(0 <= move.end_x && move.end_x < 10);
         assert(0 <= move.end_x && move.end_y < 9);
         auto &chess= board[move.end_x][move.end_y];
         if (chess.is_red == board[move.start_x][move.start_y].is_red ) {
 //            LOG(ERROR) << "move failed, move: " << move;
             return false;
-        }
-        if (chess.type != Empty) {
-            dead->emplace_back(chess);
         }
         is_init = false;
         update_is_end_from(move);
@@ -595,11 +592,6 @@ namespace CChess {
         board_red = is_red;
     }
 
-    void ChessBoard::GetDeadChess(std::vector<Chess> *deads) const {
-        for (const Chess& dead : *deads) {
-            std::cout << "type: " << dead.type << ", Color: " << dead.is_red << std::endl;
-        }
-    }
 
     bool ChessBoard::IsLegal(std::string *errorMessage) const {
         int num_qizi[7][2] = {0}; //0:Ju  1:Ma  2:Shi  3:Pao 4:Xiang 5:Wang 6:Bing
@@ -1205,7 +1197,7 @@ namespace CChess {
         return conversion;
     }
 
-    bool ChessBoard::RandMove(ChessMove &move) const {
+    /*bool ChessBoard::RandMove(ChessMove &move) const {
         std::vector<ChessMove> moves;
         GetMoves(false, &moves);
         if (moves.empty()) {
@@ -1218,28 +1210,99 @@ namespace CChess {
         move = moves[index];
 
         return true;
+    }*/
+    void ChessBoard::RefreshMoves() {
+        cachedMoves.clear();
+        GetMoves(false, &cachedMoves);
     }
 
-    bool ChessBoard::RandMove2(ChessMove &move) const {
+    ChessMove ChessBoard::RandMove2() {
+        assert(is_end == NOT_END);
+        ChessMove move(0, 0, 0, 0);
         std::vector<ChessMove> moves;
         GetMoves(false, &moves);
-        if (moves.empty()) {
-            return false;
-        }
+        // 使用Xorshift算法生成随机索引
+        size_t index = Xorshift32() % moves.size();
+        move = moves[index];
 
-        std::random_device rd;
-        std::mt19937 generator(rd());
-        int reservoir = 0;
+        return move;
+    }
 
-        for (int i = 1; i <= moves.size(); ++i) {
-            std::uniform_int_distribution<int> distribution(1, i);
-            int random = distribution(generator);
+    uint32_t ChessBoard::Xorshift32()  {
+        uint32_t x = xorshift_state;
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        xorshift_state = x;
+        return x;
+    }
 
-            if (random == 1) {
-                move = moves[i - 1];
+    int ChessBoard::EvaluatePosition() {
+        int score = 0;
+        int blackscore = 0;
+        int redscore = 0;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (board[i][j].is_red) {
+                    redscore += GetPieceValue(i, j, board[i][j].type);
+                } else {
+                    blackscore += GetPieceValue(i, j, board[i][j].type);
+                }
             }
         }
-        return true;
+        score = redscore - blackscore;
+    }
+
+    int ChessBoard::GetPieceValue(int i, int j, ChessType chess) {
+        switch (chess) {
+            case Wang:
+                return 100;
+            case Ma:
+                return 7;
+            case Bing:
+                if (board_red) {
+                    if (board[i][j].is_red) {
+                        if (i < 5)
+                            return 4;
+                        else
+                            return 1;
+                    } else {
+                        if (i > 5)
+                            return 4;
+                        else
+                            return 1;
+                    }
+                } else {
+                    if (board[i][j].is_red) {
+                        if (i > 5)
+                            return 4;
+                        else
+                            return 1;
+                    } else {
+                        if (i < 5)
+                            return 4;
+                        else
+                            return 1;
+                    }
+                }
+            case Shi:
+                return 3;
+            case Ju:
+                return 9;
+            case Pao:
+                return 6;
+            case Xiang:
+                return 3;
+            default:
+                return 0;
+        }
+
+    }
+
+    void ChessBoard::GetDeadChess(const ChessMove &move, std::vector<Chess> *dead) {
+        if (board[move.end_x][move.end_y].type != Empty) {
+            dead->emplace_back(board[move.end_x][move.end_y].type, board[move.end_x][move.end_y].is_red);
+        }
     }
 
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}

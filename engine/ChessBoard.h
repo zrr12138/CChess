@@ -6,6 +6,7 @@
 #define CCHESS_CHESSBOARD_H
 
 #include <vector>
+#include <map>
 #include <string>
 
 namespace CChess {
@@ -58,7 +59,8 @@ namespace CChess {
         BoardResult is_end;
         bool is_init;
         int move_num;
-
+        uint32_t xorshift_state;
+        std::vector<ChessMove> cachedMoves;
         void update_is_end_from(ChessMove move); // 判断局面是否结束
 
         void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
@@ -79,6 +81,12 @@ namespace CChess {
 
         std::string Conversion(const ChessMove &move, std::string conversion);
 
+        uint32_t Xorshift32();
+
+        void RefreshMoves();
+
+        int GetPieceValue(int x, int y, ChessType chess);
+
     public:
         ChessBoard();
 
@@ -90,7 +98,7 @@ namespace CChess {
 
         Chess GetChessAt(int x, int y) const;
 
-        bool Move(const ChessMove &move, std::vector<Chess> *dead);
+        bool Move(const ChessMove &move);
 
         BoardResult End() const;
 
@@ -110,13 +118,16 @@ namespace CChess {
 
         void PrintMoves(std::vector<ChessMove> *moves) const;
 
-        void GetDeadChess(std::vector<Chess> *deads) const;
 
         bool IsLegal(std::string *errorMessage) const;
 
-        bool RandMove(ChessMove &move) const;
+        //bool RandMove(ChessMove &move) const;
 
-        bool RandMove2(ChessMove &move) const;
+        ChessMove RandMove2();
+
+        int EvaluatePosition();
+
+        void GetDeadChess (const ChessMove &move, std::vector<Chess> *dead);
     };
 }
 

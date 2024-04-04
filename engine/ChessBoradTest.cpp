@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <math.h>
 #include <chrono>
 
 using namespace CChess;
@@ -22,6 +23,7 @@ void test1() {
     board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
     board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
     board.SetChessAt(Chess(ChessType::Ju, true), 0, 8);*/
+    board.BoardRed(true);
     board.initBoard();
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
@@ -30,8 +32,10 @@ void test1() {
     assert(moves.size() == 2);
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 0, 1)) != moves.end());
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 4, 1)) != moves.end());
-    board.Move(ChessMove(9, 5, 8 , 5),&dead);*/
-    board.MoveConversion(ChessMove(7, 1, 7 , 4), &QiPu);
+    */
+    board.MoveConversion(ChessMove(7, 1, 1 , 0), &QiPu);
+    board.GetDeadChess(ChessMove(7, 1, 0, 4), &dead);
+    assert(dead.size() == 1);
 }
 
 void test2() {
@@ -102,9 +106,8 @@ void test6() {
     std::string QiPu;
     board.GetMovesFrom(7, 1, &moves);
     board.MoveConversion(ChessMove(7, 1, 0, 1), &QiPu);
-    board.Move(ChessMove(7, 1, 0, 1),&dead);
+    board.Move(ChessMove(7, 1, 0, 1));
     assert(QiPu == "炮八进七");
-    assert(dead.size() == 1);
 
 }
 
@@ -141,65 +144,73 @@ void test8() {
     board.PrintOnTerminal();
 }
 
-void test9() {
 
-    ChessBoard board;
-    board.ClearBoard();
-    board.BoardRed(true);
-    board.SetChessAt(Chess(ChessType::Pao, false), 1, 4);
-    std::vector<ChessMove> moves;
-    board.GetMoves(false, &moves);
-    ChessMove move(0, 0, 0, 0);
-    std::map<std::pair<int, int>, int> frequency;
-    int n = 1000000;
-    auto start = std::chrono::steady_clock::now();
-    while (n--){
-        if (board.RandMove(move)) {
-            ++frequency[std::make_pair(move.end_x, move.end_y)];
-        }
+double CalculateStandardDeviation(const std::vector<int>& data) {
+    double mean = 0.0;
+    double squaredDifferencesSum = 0.0;
+    size_t dataSize = data.size();
+
+    // 计算平均值
+    for (int value : data) {
+        mean += value;
     }
-    auto end = std::chrono::steady_clock::now();
-    for (const auto& entry : frequency) {
-        std::cout << "Move (" << entry.first.first << ", " << entry.first.second
-                  << ") appears " << entry.second << " times." << std::endl;
+    mean /= dataSize;
+
+    // 计算差值的平方和
+    for (int value : data) {
+        double difference = value - mean;
+        squaredDifferencesSum += difference * difference;
     }
 
+    // 计算平方差值的平均值
+    double meanSquaredDifferences = squaredDifferencesSum / dataSize;
 
-    // 计算执行时间
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    // 计算标准差
+    double standardDeviation = std::sqrt(meanSquaredDifferences);
 
-    // 输出执行时间
-    std::cout << "程序执行时间: " << duration << " 毫秒" << std::endl;
+    return standardDeviation;
 }
-
 void test10() {
     auto start = std::chrono::steady_clock::now();
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(true);
-    board.SetChessAt(Chess(ChessType::Pao, false), 1, 4);
+    board.initBoard();
     //std::vector<ChessMove> moves;
     //board.GetMoves(&moves, false);
     ChessMove move(0, 0, 0, 0);
-    std::map<std::pair<int, int>, int> frequency;
-    int n = 10;
-    while (n--){
-        if (board.RandMove2(move)) {
-            ++frequency[std::make_pair(move.end_x, move.end_y)];
-        }
-    }
-
-    for (const auto& entry : frequency) {
-        std::cout << "Move (" << entry.first.first << ", " << entry.first.second
-                  << ") appears " << entry.second << " times." << std::endl;
+    std::map<std::pair<std::pair<int, int>, std::pair<int, int>>, int> frequency;
+    int n = 10000000;
+    while (n--) {
+        move = board.RandMove2();
+        ++frequency[std::make_pair(std::make_pair(move.end_x, move.end_y), std::make_pair(move.start_x, move.start_y))];
     }
     auto end = std::chrono::steady_clock::now();
-
-    // 计算执行时间
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     // 输出执行时间
     std::cout << "程序执行时间: " << duration << " 毫秒" << std::endl;
+    for (const auto& entry : frequency) {
+        int end_x = entry.first.first.first;
+        int end_y = entry.first.first.second;
+        int start_x = entry.first.second.first;
+        int start_y = entry.first.second.second;
+        std::cout << "Move (" << end_x << ", " << end_y << ", " << start_x << ", " << start_y
+                  << ") appears " << entry.second << " times." << std::endl;
+    }
+
+
+
+    std::vector<int> values;
+    for (const auto& entry : frequency) {
+        values.push_back(entry.second);
+    }
+
+    double standardDeviation = CalculateStandardDeviation(values);
+    std::cout << "Standard deviation of values: " << standardDeviation << std::endl;
+    // 计算执行时间
+    std::vector<Chess> dead;
+    board.Move(ChessMove(7, 1, 0, 1));
 }
 
 void test11() {
@@ -215,9 +226,20 @@ void test11() {
     //board.GetMoves(&moves, false);
     ChessMove move(0, 0, 0, 0);
     std::map<std::pair<int, int>, int> frequency;
-    assert(board.RandMove(move) == false);
 }
 
+
+void  test12 () {
+        ChessBoard board;
+        board.ClearBoard();
+        board.BoardRed(true);
+        board.initBoard();
+        std::vector<ChessMove> moves;
+        std::vector<Chess> dead;
+        int score;
+        score = board.EvaluatePosition();
+        std::cout << score << std::endl;
+}
 int main(int argc, char *argv[]) {
     test1();
     test2();
@@ -226,7 +248,7 @@ int main(int argc, char *argv[]) {
     test5();
     test6();
     test7();
-    //test9();
-    //test10();
+    test10();
     test11();
+    //test12();
 }
