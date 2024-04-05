@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include "common/spinlock.h"
 
-
 #define THROTTLE_CALL(delay) \
     do { \
         static uint64_t last_call_timestamp = 0; \
@@ -184,12 +183,12 @@ namespace CChess {
         free(node);
     }
 
-        void MCTSEngine::Simulation(const ChessBoard &board, bool is_red, BoardResult *end) {
-            SearchCtx ctx;
-            ctx.board=board;
-            Node node(is_red, this);
-            *end = node.Simulation(&ctx);
-        }
+    BoardResult MCTSEngine::Simulation(const ChessBoard &board, bool is_red) {
+        SearchCtx ctx;
+        ctx.board = board;
+        Node node(is_red, this);
+        return node.Simulation(&ctx);
+    }
 
 
     Node::Node(bool is_red, MCTSEngine *engine) : is_red(is_red), n(0), black_win_count(0), red_win_count(0),
@@ -248,7 +247,6 @@ namespace CChess {
         }
         BoardResult end = board.End();
         UpdateValue(end);
-        //board.PrintOnTerminal();
         return end;
     }
 

@@ -14,6 +14,7 @@
 #include <random>
 #include "gflags/gflags.h"
 #include "glog/logging.h"
+
 using namespace CChess;
 
 void test1() {
@@ -41,6 +42,21 @@ void test1() {
     std::cout << "simulation " << n << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
 }
 
+void test2(int thread_num) {
+    ChessBoard board;
+    board.initBoard();
+    MCTSEngine engine(thread_num);
+    engine.StartSearch(board, true);
+    while (board.End() != BoardResult::NOT_END) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        auto move = engine.GetResult();
+        std::string move_string;
+        assert(board.MoveConversion(move, &move_string));
+        std::cout << "move:" << move_string << std::endl;
+        assert(board.Move(move));
+    }
+}
+
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging("ManualTest");
@@ -48,5 +64,5 @@ int main(int argc, char *argv[]) {
     FLAGS_v = 2;
 
     test1();
-
+    test2();
 }

@@ -37,6 +37,10 @@ namespace CChess {
         bool operator!=(const ChessMove &rhs) const;
 
         friend std::ostream &operator<<(std::ostream &os, const ChessMove &move);
+
+        std::string ToString() const;
+
+        void ParseFromString(const std::string &str);
     };
     enum BoardResult {
         RED_WIN = 0,
@@ -52,8 +56,6 @@ namespace CChess {
         bool IsEmpty() const;
 
         void SetEmpty();
-
-
 
         Chess(ChessType type, bool isRed);
     };
@@ -127,7 +129,6 @@ namespace CChess {
         void PrintOnTerminal();
 
         void PrintMoves(std::vector<ChessMove> *moves) const;
-
 
         bool IsLegal(std::string *errorMessage) const;
 

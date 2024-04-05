@@ -7,6 +7,8 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 #include <chrono>
 
 namespace CChess {
@@ -387,7 +389,7 @@ namespace CChess {
         move_num = 0;
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
-                board[i][j].type = Empty;
+                board[i][j].SetEmpty();
             }
         }
     }
@@ -488,117 +490,46 @@ namespace CChess {
     }
 
     void ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
+        assert(!chess.IsEmpty());
         board[x][y] = chess;
     }
 
     void ChessBoard::ParseFromString(const std::string &str) {
-        for (int i = 0; i < str.length(); i++) {
-            switch (str[i]) {
-                case '*':
-                    board[i / 9][i % 9].type = Empty;
-                    break;
-                case 'a':
-                    board[i / 9][i % 9] = Chess(ChessType::Wang, true);
-                    break;
-                case 'A':
-                    board[i / 9][i % 9] = Chess(ChessType::Wang, false);
-                    break;
-                case 'b':
-                    board[i / 9][i % 9] = Chess(ChessType::Ma, true);
-                    break;
-                case 'B':
-                    board[i / 9][i % 9] = Chess(ChessType::Ma, false);
-                    break;
-                case 'c':
-                    board[i / 9][i % 9] = Chess(ChessType::Bing, true);
-                    break;
-                case 'C':
-                    board[i / 9][i % 9] = Chess(ChessType::Bing, false);
-                    break;
-                case 'd':
-                    board[i / 9][i % 9] = Chess(ChessType::Shi, true);
-                    break;
-                case 'D':
-                    board[i / 9][i % 9] = Chess(ChessType::Shi, false);
-                    break;
-                case 'e':
-                    board[i / 9][i % 9] = Chess(ChessType::Ju, true);
-                    break;
-                case 'E':
-                    board[i / 9][i % 9] = Chess(ChessType::Ju, false);
-                    break;
-                case 'f':
-                    board[i / 9][i % 9] = Chess(ChessType::Pao, true);
-                    break;
-                case 'F':
-                    board[i / 9][i % 9] = Chess(ChessType::Pao, false);
-                    break;
-                case 'g':
-                    board[i / 9][i % 9] = Chess(ChessType::Xiang, true);
-                    break;
-                case 'G':
-                    board[i / 9][i % 9] = Chess(ChessType::Xiang, false);
-                    break;
-                default:
-                    break;
-            }
+        nlohmann::json jsonBoard = nlohmann::json::parse(str);
+        ClearBoard();
+        for (const auto& jsonChess : jsonBoard) {
+            int row = jsonChess["row"];
+            int col = jsonChess["col"];
+            ChessType type = jsonChess["type"];
+            bool isRed = jsonChess["is_red"];
+            assert(type != Empty);
+            assert(0<=row&&row<10);
+            assert(0<=col&&col<10);
+            Chess chess(type, isRed);
+            SetChessAt(chess, row, col);
         }
     }
 
     std::string ChessBoard::ToString() const {
-        std::string str;
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 9; j++) {
-                switch (board[i][j].type) {
-                    case Empty:
-                        str += "*";
-                        break;
-                    case Wang:
-                        if (board[i][j].is_red)
-                            str += "a";
-                        else
-                            str += "A";
-                        break;
-                    case Ma:
-                        if (board[i][j].is_red)
-                            str += "b";
-                        else
-                            str += "B";
-                        break;
-                    case Bing:
-                        if (board[i][j].is_red)
-                            str += "c";
-                        else
-                            str += "C";
-                        break;
-                    case Shi:
-                        if (board[i][j].is_red)
-                            str += "d";
-                        else
-                            str += "D";
-                        break;
-                    case Ju:
-                        if (board[i][j].is_red)
-                            str += "e";
-                        else
-                            str += "E";
-                        break;
-                    case Pao:
-                        if (board[i][j].is_red)
-                            str += "f";
-                        else
-                            str += "F";
-                        break;
-                    case Xiang:
-                        if (board[i][j].is_red)
-                            str += "g";
-                        else
-                            str += "G";
-                        break;
+        nlohmann::json jsonBoard;
+
+        for (int row = 0; row < 10; row++) {
+            for (int col = 0; col < 9; col++) {
+                const Chess& chess = board[row][col];
+                if(chess.IsEmpty()){
+                    continue;
                 }
+                nlohmann::json jsonChess;
+                jsonChess["type"] = chess.type;
+                jsonChess["is_red"] = chess.is_red;
+                jsonChess["row"]=row;
+                jsonChess["col"]=col;
+
+                jsonBoard.push_back( jsonChess);
             }
         }
-        return str;
+
+        return jsonBoard.dump();
     }
 
     void ChessBoard::PrintOnTerminal() {
@@ -1546,6 +1477,23 @@ namespace CChess {
         os << "start_x: " << move.start_x << " start_y: " << move.start_y << " end_x: " << move.end_x << " end_y: "
            << move.end_y;
         return os;
+    }
+
+    std::string ChessMove::ToString() const {
+        nlohmann::json jsonMove;
+        jsonMove["start_x"] = start_x;
+        jsonMove["start_y"] = start_y;
+        jsonMove["end_x"] = end_x;
+        jsonMove["end_y"] = end_y;
+        return jsonMove.dump();
+    }
+
+    void ChessMove::ParseFromString(const std::string &str) {
+        nlohmann::json jsonMove = nlohmann::json::parse(str);
+        start_x = jsonMove["start_x"];
+        start_y = jsonMove["start_y"];
+        end_x = jsonMove["end_x"];
+        end_y = jsonMove["end_y"];
     }
 
 }

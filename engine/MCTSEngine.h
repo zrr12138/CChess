@@ -59,7 +59,7 @@ namespace CChess {
 
         bool Stop();
 
-        void Simulation(const ChessBoard &board, bool is_red, BoardResult *end); //for unit test
+        BoardResult Simulation(const ChessBoard &board, bool is_red); //for unit test
 
 //        void DumpTree();
 
