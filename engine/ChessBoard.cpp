@@ -5,6 +5,7 @@
 #include "ChessBoard.h"
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 #include <random>
 
 namespace CChess {
@@ -19,7 +20,7 @@ namespace CChess {
 //    if (!board[row][col].is_red) {
             // 检查车的水平向左运动
             for (int i = col - 1; i >= 0; i--) {
-                if (board[row][i].type == ChessType::Empty) {
+                if (board[row][i].IsEmpty()) {
                     AddMoveIfValid(row, col, row, i, moves);
                 } else {
                     if (board[row][col].is_red != board[row][i].is_red) {
@@ -31,7 +32,7 @@ namespace CChess {
 
             // 检查车的水平向右移动
             for (int i = col + 1; i < 9; i++) {
-                if (board[row][i].type == ChessType::Empty) {
+                if (board[row][i].IsEmpty()) {
                     AddMoveIfValid(row, col, row, i, moves);
                 } else {
                     if (board[row][col].is_red != board[row][i].is_red) {
@@ -43,7 +44,7 @@ namespace CChess {
 
             // 检查车的垂直移动向上
             for (int i = row - 1; i >= 0 ; i--) {
-                if (board[i][col].type == ChessType::Empty) {
+                if (board[i][col].IsEmpty()) {
                     AddMoveIfValid(row, col, i, col, moves);
                 } else {
                     if (board[row][col].is_red != board[i][col].is_red) {
@@ -55,7 +56,7 @@ namespace CChess {
 
             // 检查车的垂直向下移动
             for (int i = row + 1; i < 10; i++) {
-                if (board[i][col].type == ChessType::Empty) {
+                if (board[i][col].IsEmpty()) {
                     AddMoveIfValid(row, col, i, col, moves);
                 } else {
                     if (board[row][col].is_red != board[i][col].is_red) {
@@ -70,11 +71,11 @@ namespace CChess {
     void ChessBoard::PaoRule(int row, int col, std::vector<ChessMove> *moves) const{
         // 检查炮的水平向左移动
         for (int i = col - 1; i >= 0; i--) {
-            if (board[row][i].type == ChessType::Empty) {
+            if (board[row][i].IsEmpty()) {
                 AddMoveIfValid(row, col, row, i, moves);
-            } else if (board[row][i].type != Empty) {
+            } else {
                 for (int j = i - 1; j >= 0; j--) {
-                    if (board[row][j].type != Empty) {
+                    if (!board[row][j].IsEmpty() && board[row][col].is_red != board[row][j].is_red) {
                         AddMoveIfValid(row, col, row, j, moves);
                         break;
                     }
@@ -84,11 +85,11 @@ namespace CChess {
         }
         // 检查炮的水平向右移动
         for (int i = col + 1; i < 9; i++) {
-            if (board[row][i].type == ChessType::Empty) {
+            if (board[row][i].IsEmpty()) {
                 AddMoveIfValid(row, col, row, i, moves);
-            } else if (board[row][i].type != Empty) {
+            } else {
                 for (int j = i + 1; j < 9; j++) {
-                    if (board[row][j].type != Empty) {
+                    if (!board[row][j].IsEmpty() && board[row][col].is_red != board[row][j].is_red) {
                         AddMoveIfValid(row, col, row, j, moves);
                         break;
                     }
@@ -98,11 +99,11 @@ namespace CChess {
         }
         // 检查炮的垂直向上移动
         for (int i = row - 1; i >= 0; i--) {
-            if (board[i][col].type == ChessType::Empty) {
+            if (board[i][col].IsEmpty()) {
                 AddMoveIfValid(row, col, i, col, moves);
-            } else if (board[i][col].type != Empty) {
+            } else {
                 for (int j = i - 1; j >= 0; j--) {
-                    if (board[j][col].type != Empty && board[row][col].is_red != board[j][col].is_red) {
+                    if (!board[j][col].IsEmpty() && board[row][col].is_red != board[j][col].is_red) {
                         AddMoveIfValid(row, col, j, col, moves);
                         break;
                     }
@@ -112,11 +113,11 @@ namespace CChess {
         }
         // 检查炮的垂直向下移动
         for (int i = row + 1; i < 10; i++) {
-            if (board[i][col].type == ChessType::Empty) {
+            if (board[i][col].IsEmpty()) {
                 AddMoveIfValid(row, col, i, col, moves);
-            } else if (board[i][col].type != Empty) {
+            } else {
                 for (int j = i + 1; j < 10; j++) {
-                    if (board[j][col].type != Empty) {
+                    if (!board[j][col].type && board[row][col].is_red != board[j][col].is_red) {
                         AddMoveIfValid(row, col, j, col, moves);
                         break;
                     }
@@ -138,8 +139,13 @@ namespace CChess {
             int mid_x = row + offsets2[i / 2][0];
             int mid_y = col + offsets2[i / 2][1];
             if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9) {
-                if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red)) {
-                    AddMoveIfValid(row, col, end_x, end_y, moves);
+                if (board[mid_x][mid_y].IsEmpty()) {
+                    if (board[end_x][end_y].IsEmpty())
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    else{
+                        if (board[end_x][end_y].is_red != board[row][col].is_red)
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
                 }
             }
         }
@@ -155,8 +161,13 @@ namespace CChess {
             int mid_y = (col + end_y) / 2;
             if (0 <= end_x && end_x < 10 && 0 <= end_y && end_y < 9) {
                 if ((row < 5 && end_x < 5) || (row >= 5 && end_x >= 5)) {
-                    if (board[mid_x][mid_y].type == Empty && (board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
-                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    if (board[mid_x][mid_y].IsEmpty()) {
+                        if (board[end_x][end_y].IsEmpty())
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                        else{
+                            if (board[end_x][end_y].is_red != board[row][col].is_red)
+                                AddMoveIfValid(row, col, end_x, end_y, moves);
+                        }
                     }
                 }
             }
@@ -171,9 +182,12 @@ namespace CChess {
             int end_y = col + offsets[i][1];
             if (3 <= end_y && end_y <= 5) {
                 if ((end_x < 3 && end_x >= 0) || (end_x > 6 && end_x <= 9)) {
-                    if ((board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                    if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
-
+                    } else {
+                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                        }
                     }
                 }
             }
@@ -188,8 +202,12 @@ namespace CChess {
             int end_y = col + offsets[i][1];
             if (3 <= end_y && end_y <= 5) {
                 if ((end_x < 3 && end_x >= 0) || (end_x > 6 && end_x <= 9)) {
-                    if ((board[end_x][end_y].type == Empty || board[row][col].is_red != board[end_x][end_y].is_red)) {
+                    if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
+                    } else {
+                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                        }
                     }
                 }
             }
@@ -208,16 +226,25 @@ namespace CChess {
                     end_x = row + ReGuohe[i][0];
                     end_y = col + ReGuohe[i][1];
                     if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9){
-                        if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        if (board[end_x][end_y].IsEmpty()) {
                             AddMoveIfValid(row, col, end_x, end_y, moves);
+                        } else {
+                            if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                                AddMoveIfValid(row, col, end_x, end_y, moves);
+                            }
                         }
                     }
                 } else {
                     end_x = row - 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                    if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                         break;
+                    } else {
+                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                            break;
+                        }
                     }
                 }
             } else if((!board[row][col].is_red && board_red) || (board[row][col].is_red && !board_red)) {
@@ -225,17 +252,25 @@ namespace CChess {
                     end_x = row + BaGuohe[i][0];
                     end_y = col + BaGuohe[i][1];
                     if (0<= end_x && end_x < 10 && 0 <= end_y && end_y < 9) {
-                        if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                        if (board[end_x][end_y].IsEmpty()) {
                             AddMoveIfValid(row, col, end_x, end_y, moves);
+                        } else {
+                            if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                                AddMoveIfValid(row, col, end_x, end_y, moves);
+                            }
                         }
                     }
-
                 } else {
                     end_x = row + 1;
                     end_y = col;
-                    if (board[end_x][end_y].type == Empty || board[end_x][end_y].is_red != board[row][col].is_red) {
+                    if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                         break;
+                    } else {
+                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                            break;
+                        }
                     }
                 }
             }
@@ -244,38 +279,39 @@ namespace CChess {
 
 
 
-    void ChessBoard::GetMoves(bool is_end, std::vector<ChessMove> *moves) const{
+    void ChessBoard::GetMoves(bool is_red, std::vector<ChessMove> *moves) const{
         //moves->reserve(1);
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
-                if (is_end == board[row][col].is_red) {
-                    switch ( board[row][col].type ) {
-                        case Ju:
-                            JuRule(row, col, moves);
-                            break;
-                        case Pao:
-                            PaoRule(row, col, moves);
-                            break;
-                        case Ma:
-                            MaRule(row, col, moves);
-                            break;
-                        case Xiang:
-                            XiangRule(row, col, moves);
-                            break;
-                        case Shi:
-                            ShiRule(row, col, moves);
-                            break;
-                        case Wang:
-                            WangRule(row, col, moves);
-                            break;
-                        case Bing:
-                            BingRule(row, col, moves);
-                            break;
-                        default:
-                            break;
+                if (!board[row][col].IsEmpty()) {
+                    if (is_red == board[row][col].is_red) {
+                        switch ( board[row][col].type ) {
+                            case Ju:
+                                JuRule(row, col, moves);
+                                break;
+                            case Pao:
+                                PaoRule(row, col, moves);
+                                break;
+                            case Ma:
+                                MaRule(row, col, moves);
+                                break;
+                            case Xiang:
+                                XiangRule(row, col, moves);
+                                break;
+                            case Shi:
+                                ShiRule(row, col, moves);
+                                break;
+                            case Wang:
+                                WangRule(row, col, moves);
+                                break;
+                            case Bing:
+                                BingRule(row, col, moves);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
-
             }
         }
     }
@@ -289,19 +325,25 @@ namespace CChess {
     bool ChessBoard::Move(const ChessMove &move) {
         assert(0 <= move.end_x && move.end_x < 10);
         assert(0 <= move.end_x && move.end_y < 9);
-        auto &chess= board[move.end_x][move.end_y];
-        if (chess.is_red == board[move.start_x][move.start_y].is_red ) {
-//            LOG(ERROR) << "move failed, move: " << move;
+        auto &end_chess= board[move.end_x][move.end_y];
+        auto &start_chess = board[move.start_x][move.start_y];
+        if (start_chess.IsEmpty()) {
             return false;
+        } else {
+            if (!end_chess.IsEmpty()) {
+                if (start_chess.is_red == end_chess.is_red) {
+                    return false;
+                }
+            }
         }
         is_init = false;
-        update_is_end_from(move);
-        assert(is_end == NOT_END);
+        update_board_from(move);
+        //assert(is_end == NOT_END);
         move_num++;
         return true;
     }
 
-    BoardResult ChessBoard::End() const {
+     BoardResult ChessBoard::End() const {
         switch (is_end) {
             case 2:
                 return BoardResult::NOT_END;
@@ -309,8 +351,6 @@ namespace CChess {
                 return BoardResult::BLACK_WIN;
             case 0:
                 return BoardResult::RED_WIN;
-            default:
-                assert(2);
         }
     }
 
@@ -395,7 +435,13 @@ namespace CChess {
             SetChessAt(Chess(ChessType::Bing, true),3, 6);
             SetChessAt(Chess(ChessType::Bing, true),3, 8);
         }
-
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (board[i][j].type != Empty) {
+                    Total.emplace_back(board[i][j].type,board[i][j].is_red);
+                }
+            }
+        }
     }
 
 
@@ -575,17 +621,21 @@ namespace CChess {
             }
     }
 
-    void ChessBoard::update_is_end_from(ChessMove move) {
+    void ChessBoard::update_board_from(ChessMove move) {
         //auto &chess = board[move.end_x][move.end_y];
-        if (board[move.end_x][move.end_y].type == Wang) {
-            if (board[move.end_x][move.end_y].is_red) {
-                is_end = BLACK_WIN;
-            } else {
-                is_end = RED_WIN;
-            }
-        }
         board[move.end_x][move.end_y] = board[move.start_x][move.start_y];
         board[move.start_x][move.start_y].type = Empty;
+        if (board[0][3].type != Wang && board[1][3].type != Wang && board[2][3].type != Wang &&
+            board[0][4].type != Wang && board[1][4].type != Wang && board[2][4].type != Wang &&
+            board[0][5].type != Wang && board[1][5].type != Wang && board[2][5].type != Wang) {
+            is_end = BoardResult::RED_WIN;
+        } else if (board[7][3].type != Wang && board[8][3].type != Wang && board[9][3].type != Wang &&
+                   board[7][4].type != Wang && board[8][4].type != Wang && board[9][4].type != Wang &&
+                   board[7][5].type != Wang && board[8][5].type != Wang && board[9][5].type != Wang) {
+            is_end = BoardResult::BLACK_WIN;
+        } else {
+            is_end = BoardResult::NOT_END;
+        }
     }
 
     void ChessBoard::BoardRed(bool is_red) {
@@ -1035,6 +1085,8 @@ namespace CChess {
                 Con = Conversion(move,Con);
                 *QiPu = Con;
                 break;
+            default:
+                break;
         }
     }
 
@@ -1165,33 +1217,126 @@ namespace CChess {
             default:
                 break;
         }
-        if (board[move.start_x][move.start_y].is_red) {
-            if (move.start_x > move.end_x) {
-                conversion += Rename1;
-                conversion += "进";
-                conversion += Rename2;
-            } else if (move.start_x < move.end_x) {
-                conversion += Rename1;
-                conversion += "退";
-                conversion += Rename2;
-            } else {
-                conversion += Rename1;
-                conversion += "平";
-                conversion += Rename3;
+        if (board[move.start_x][move.start_y].type != Ma && board[move.start_x][move.start_y].type != Shi && board[move.start_x][move.start_y].type != Xiang) {
+            for (int i = 0; i < 10; i++) {
+                if (i != move.start_x && board[i][move.start_y].is_red == board[move.start_x][move.start_y].is_red && board[i][move.start_y].type == board[move.start_x][move.start_y].type) {
+                    if (board[move.start_x][move.start_y].is_red) {
+                        if (i > move.start_x) {
+                            if (move.start_x > move.end_x) {
+                                conversion.insert(0, "前");
+                                conversion += "进";
+                                conversion += Rename2;
+                            } else if (move.start_x < move.end_x) {
+                                conversion.insert(0, "前");
+                                conversion += "退";
+                                conversion += Rename2;
+                            } else {
+                                conversion.insert(0, "前");
+                                conversion += "平";
+                                conversion += Rename3;
+                            }
+                        } else {
+                            if (move.start_x > move.end_x) {
+                                conversion.insert(0, "后");
+                                conversion += "进";
+                                conversion += Rename2;
+                            } else if (move.start_x < move.end_x) {
+                                conversion.insert(0, "后");
+                                conversion += "退";
+                                conversion += Rename2;
+                            } else {
+                                conversion.insert(0, "后");
+                                conversion += "平";
+                                conversion += Rename3;
+                            }
+                        }
+                    } else {
+                        if (i > move.start_x) {
+                            if (move.start_x > move.end_x) {
+                                conversion.insert(0, "前");
+                                conversion += "退";
+                                conversion += Baname2;
+                            } else if (move.start_x < move.end_x) {
+                                conversion.insert(0, "前");
+                                conversion += "进";
+                                conversion += Baname2;
+                            } else {
+                                conversion.insert(0, "前");
+                                conversion += "平";
+                                conversion += Baname3;
+                            }
+                        } else {
+                            if (move.start_x > move.end_x) {
+                                conversion.insert(0, "后");
+                                conversion += "退";
+                                conversion += Baname2;
+                            } else if (move.start_x < move.end_x) {
+                                conversion.insert(0, "后");
+                                conversion += "进";
+                                conversion += Baname2;
+                            } else {
+                                conversion.insert(0, "后");
+                                conversion += "平";
+                                conversion += Baname3;
+                            }
+                        }
+                    }
+                    break;
+                } else {
+                    if (board[move.start_x][move.start_y].is_red) {
+                        if (move.start_x > move.end_x) {
+                            conversion += Rename1;
+                            conversion += "进";
+                            conversion += Rename2;
+                        } else if (move.start_x < move.end_x) {
+                            conversion += Rename1;
+                            conversion += "退";
+                            conversion += Rename2;
+                        } else {
+                            conversion += Rename1;
+                            conversion += "平";
+                            conversion += Rename3;
+                        }
+                    } else {
+                        if (move.start_x > move.end_x) {
+                            conversion += Baname1;
+                            conversion += "退";
+                            conversion += Baname2;
+                        } else if (move.start_x < move.end_x) {
+                            conversion += Baname1;
+                            conversion += "进";
+                            conversion += Baname2;
+                        } else {
+                            conversion += Baname1;
+                            conversion += "平";
+                            conversion += Baname3;
+                        }
+                    }
+                    break;
+                }
+
             }
         } else {
-            if (move.start_x > move.end_x) {
-                conversion += Baname1;
-                conversion += "退";
-                conversion += Baname2;
-            } else if (move.start_x < move.end_x) {
-                conversion += Baname1;
-                conversion += "进";
-                conversion += Baname2;
+            if (board[move.start_x][move.start_y].is_red) {
+                if (move.start_x > move.end_x) {
+                    conversion += Rename1;
+                    conversion += "进";
+                    conversion += Rename3;
+                } else if (move.start_x < move.end_x) {
+                    conversion += Rename1;
+                    conversion += "退";
+                    conversion += Rename3;
+                }
             } else {
-                conversion += Baname1;
-                conversion += "平";
-                conversion += Baname3;
+                if (move.start_x > move.end_x) {
+                    conversion += Baname1;
+                    conversion += "退";
+                    conversion += Baname3;
+                } else if (move.start_x < move.end_x) {
+                    conversion += Baname1;
+                    conversion += "进";
+                    conversion += Baname3;
+                }
             }
         }
         return conversion;
@@ -1211,20 +1356,18 @@ namespace CChess {
 
         return true;
     }*/
-    void ChessBoard::RefreshMoves() {
-        cachedMoves.clear();
-        GetMoves(false, &cachedMoves);
-    }
 
-    ChessMove ChessBoard::RandMove2() {
+    ChessMove ChessBoard::RandMove2(bool is_red) {
         assert(is_end == NOT_END);
         ChessMove move(0, 0, 0, 0);
+        //std::cout << move.end_x << " " << move.end_y << std::endl;
         std::vector<ChessMove> moves;
-        GetMoves(false, &moves);
-        // 使用Xorshift算法生成随机索引
-        size_t index = Xorshift32() % moves.size();
+        GetMoves(is_red, &moves);
+        std::random_device rd;
+        xorshift_state = rd();
+        std::size_t index = Xorshift32() % moves.size();
         move = moves[index];
-
+        //std::cout << move.end_x << " " << move.end_y << std::endl;
         return move;
     }
 
@@ -1251,6 +1394,7 @@ namespace CChess {
             }
         }
         score = redscore - blackscore;
+        return score;
     }
 
     int ChessBoard::GetPieceValue(int i, int j, ChessType chess) {
@@ -1299,9 +1443,29 @@ namespace CChess {
 
     }
 
-    void ChessBoard::GetDeadChess(const ChessMove &move, std::vector<Chess> *dead) {
-        if (board[move.end_x][move.end_y].type != Empty) {
-            dead->emplace_back(board[move.end_x][move.end_y].type, board[move.end_x][move.end_y].is_red);
+    void ChessBoard::GetDeadChess(std::vector<Chess> *dead) {
+        dead->clear();
+        std::vector<Chess> Live;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (board[i][j].type != Empty) {
+                    Live.emplace_back(board[i][j].type,board[i][j].is_red);
+                }
+            }
+        }
+        std::sort(Total.begin(), Total.end(), ChessComparator);
+        std::sort(Live.begin(), Live.end(), ChessComparator);
+        std::set_difference(Total.begin(), Total.end(), Live.begin(), Live.end(),
+                            std::back_inserter(*dead), ChessComparator);
+    }
+
+    bool ChessBoard::ChessComparator(const Chess &chess1, const Chess &chess2) {
+        if (chess1.type < chess2.type) {
+            return true;
+        } else if (chess1.type == chess2.type) {
+            return chess1.is_red < chess2.is_red;
+        } else {
+            return false;
         }
     }
 

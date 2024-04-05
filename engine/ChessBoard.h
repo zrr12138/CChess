@@ -66,9 +66,10 @@ namespace CChess {
         BoardResult is_end;
         bool is_init;
         int move_num;
+        std::vector<Chess> Total;
         uint32_t xorshift_state;
-        std::vector<ChessMove> cachedMoves;
-        void update_is_end_from(ChessMove move); // 判断局面是否结束
+
+        void update_board_from(ChessMove move); // 判断局面是否结束
 
         void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
 
@@ -90,9 +91,9 @@ namespace CChess {
 
         uint32_t Xorshift32();
 
-        void RefreshMoves();
-
         int GetPieceValue(int x, int y, ChessType chess);
+
+        static bool ChessComparator(const Chess& chess1, const Chess& chess2);
 
     public:
         ChessBoard();
@@ -130,11 +131,12 @@ namespace CChess {
 
         //bool RandMove(ChessMove &move) const;
 
-        ChessMove RandMove2();
+        ChessMove RandMove2(bool is_red);
 
         int EvaluatePosition();
 
-        void GetDeadChess (const ChessMove &move, std::vector<Chess> *dead);
+        void GetDeadChess (std::vector<Chess> *dead);
+
     };
 }
 
