@@ -16,6 +16,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/third-party/Crow/include
         ${PROJECT_SOURCE_DIR}/third-party/glog/src
+        ${PROJECT_SOURCE_DIR}/third-party/nlohmann/include
         ${CMAKE_BINARY_DIR}/third-party/gflags/include
 )
 

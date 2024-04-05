@@ -7,3 +7,6 @@
 [submodule "engine/third-party/gflags"]
 	path = engine/third-party/gflags
 	url = https://github.com/gflags/gflags.git
+[submodule "engine/third-party/nlohmann"]
+	path = engine/third-party/nlohmann
+	url = https://github.com/nlohmann/json.git
