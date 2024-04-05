@@ -33,8 +33,8 @@ void test1() {
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 0, 1)) != moves.end());
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 4, 1)) != moves.end());
     */
-    board.MoveConversion(ChessMove(7, 1, 1 , 0), &QiPu);
-    board.GetDeadChess(ChessMove(7, 1, 0, 4), &dead);
+    board.Move(ChessMove(7, 1, 0 ,1));
+    board.GetDeadChess(&dead);
     assert(dead.size() == 1);
 }
 
@@ -180,9 +180,11 @@ void test10() {
     //board.GetMoves(&moves, false);
     ChessMove move(0, 0, 0, 0);
     std::map<std::pair<std::pair<int, int>, std::pair<int, int>>, int> frequency;
-    int n = 10000000;
+    int n = 1000000;
+    bool  is_red_now = true;
     while (n--) {
-        move = board.RandMove2();
+        move = board.RandMove2(is_red_now);
+        is_red_now = !is_red_now;
         ++frequency[std::make_pair(std::make_pair(move.end_x, move.end_y), std::make_pair(move.start_x, move.start_y))];
     }
     auto end = std::chrono::steady_clock::now();
