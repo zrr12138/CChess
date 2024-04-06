@@ -89,6 +89,12 @@ class ChessBoard:
                 chess.draw(board, i, j)
         surface.blit(board, pygame.Rect(0, 0, self.rect.width, self.rect.height))
 
+    def highlight(self, surface, row, col, color):
+        rect = pygame.Rect(0, 0, Chess.cell_size, Chess.cell_size)
+        rect.x = Chess.begin_x + Chess.cell_size * col - Chess.bias
+        rect.y = Chess.begin_y + Chess.cell_size * row - Chess.bias
+        pygame.draw.rect(surface, color, rect, 5)
+
     def get_chess(self, row, col):
         return copy.deepcopy(self.board[row][col])
 
