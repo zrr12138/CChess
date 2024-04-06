@@ -4,6 +4,7 @@ from enum import Enum
 from chess_board import *
 from context import *
 import pygame_gui
+from client import Client
 
 # pygame setup
 pygame.init()
@@ -17,6 +18,8 @@ ctx = Context()
 
 ctx.board.set_chess(1, 1, Chess(ChessType.Pao, True))
 
+client = Client("127.0.0.1", 12138)
+
 
 def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
     if event.button == 3 and ctx.status == Status.PLACE:
@@ -29,10 +32,11 @@ def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
             start_chess = ctx.board.get_chess(ctx.choose_pos[0], ctx.choose_pos[1])
             if start_chess.type != ChessType.Empty and end_chess.type == ChessType.Empty:
                 if ctx.status != Status.PLACE:
-                    # 判断可行性
+                    ctx.board = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
                     pass
-                ctx.board.set_chess(x, y, start_chess)
-                ctx.board.clear_chess(ctx.choose_pos[0], ctx.choose_pos[1])
+                else:
+                    ctx.board.set_chess(x, y, start_chess)
+                    ctx.board.clear_chess(ctx.choose_pos[0], ctx.choose_pos[1])
             else:
                 ctx.choose_pos = (x, y)
 
@@ -104,6 +108,7 @@ help_text_box = pygame_gui.elements.UITextBox(
                               window_size[1] - chess_board.get_rect().height),
     manager=gui_manager
 )
+ctx.board = client.get_init_board()
 
 while ctx.running:
     for event in pygame.event.get():
