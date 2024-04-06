@@ -31,3 +31,4 @@
 *.out
 *.app
 cmake-build-debug
+cchess_gui/*.log
