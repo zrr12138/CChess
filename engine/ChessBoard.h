@@ -47,6 +47,9 @@ namespace CChess {
         BLACK_WIN = 1,
         NOT_END = 2,
     };
+
+    std::string getBoardResultStr(BoardResult res);
+
     struct Chess {
         ChessType type;
         bool is_red;
@@ -65,10 +68,10 @@ namespace CChess {
     private:
         Chess board[10][9];
 
-        bool board_red{};
+        bool red_at_0{};
         BoardResult end;
         std::vector<Chess> Total;
-        uint32_t xorshift_state;
+        uint32_t xorshift_state{};
 
 
         void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
@@ -123,7 +126,7 @@ namespace CChess {
 
         void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
-        void MoveConversion (const ChessMove &move, std::string *Con);
+        bool MoveConversion (const ChessMove &move, std::string *Con);
 
         void ParseFromString(const std::string &str); //json字符串
 

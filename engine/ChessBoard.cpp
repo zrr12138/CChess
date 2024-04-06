@@ -246,7 +246,7 @@ namespace CChess {
         for (int i = 0; i < 3; i++) {
             int end_x;
             int end_y;
-            if ((board[row][col].is_red && board_red) || (!board[row][col].is_red && !board_red)) {
+            if ((board[row][col].is_red && red_at_0) || (!board[row][col].is_red && !red_at_0)) {
                 if (row < 5) {
                     end_x = row + ReGuohe[i][0];
                     end_y = col + ReGuohe[i][1];
@@ -272,7 +272,7 @@ namespace CChess {
                         }
                     }
                 }
-            } else if ((!board[row][col].is_red && board_red) || (board[row][col].is_red && !board_red)) {
+            } else if ((!board[row][col].is_red && red_at_0) || (board[row][col].is_red && !red_at_0)) {
                 if (row > 4) {
                     end_x = row + BaGuohe[i][0];
                     end_y = col + BaGuohe[i][1];
@@ -304,7 +304,6 @@ namespace CChess {
 
 
     void ChessBoard::GetMoves(bool is_red, std::vector<ChessMove> *moves) const {
-        moves->clear();
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 if (!board[row][col].IsEmpty()) {
@@ -371,14 +370,7 @@ namespace CChess {
     }
 
     BoardResult ChessBoard::End() const {
-        switch (end) {
-            case 2:
-                return BoardResult::NOT_END;
-            case 1:
-                return BoardResult::BLACK_WIN;
-            case 0:
-                return BoardResult::RED_WIN;
-        }
+        return end;
     }
 
     void ChessBoard::ClearBoard() {
@@ -392,7 +384,7 @@ namespace CChess {
 
     void ChessBoard::initBoard() {
         ClearBoard();
-        if (board_red) {
+        if (!red_at_0) {
             SetChessAt(Chess(ChessType::Ju, true), 9, 0);
             SetChessAt(Chess(ChessType::Ma, true), 9, 1);
             SetChessAt(Chess(ChessType::Xiang, true), 9, 2);
@@ -579,7 +571,7 @@ namespace CChess {
         std::cout << std::endl;
     }
 
-    ChessBoard::ChessBoard() {
+    ChessBoard::ChessBoard():end(BoardResult::NOT_END),red_at_0(false) {
 
     }
 
@@ -591,7 +583,7 @@ namespace CChess {
     }
 
     void ChessBoard::BoardRed(bool is_red) {
-        board_red = is_red;
+        red_at_0 = is_red;
     }
 
 
@@ -651,7 +643,7 @@ namespace CChess {
             for (int j = 0; j < 9; j++) {
                 switch (board[i][j].type) {
                     case Wang:
-                        if (board_red) {
+                        if (red_at_0) {
                             if (board[i][j].is_red) {
                                 if ((3 <= j && j < 6) && (6 < i)) {
                                     *errorMessage = "合法";
@@ -686,7 +678,7 @@ namespace CChess {
                         }
                         break;
                     case Bing:
-                        if (board_red) {
+                        if (red_at_0) {
                             if (board[i][j].is_red) {
                                 if (i == 5 || i == 6) {
                                     if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
@@ -751,7 +743,7 @@ namespace CChess {
                     case Shi:
                         int position;
                         position = i + j;
-                        if (board_red) {
+                        if (red_at_0) {
                             if (board[i][j].is_red) {
                                 if (position % 2 != 0) {
                                     *errorMessage = "士越界";
@@ -778,7 +770,7 @@ namespace CChess {
                         }
                         break;
                     case Xiang:
-                        if (board_red) {
+                        if (red_at_0) {
                             if (!board[i][j].is_red) {
                                 if (j == 0 || j == 8 || j == 4) {
                                     if (i == 2)
@@ -929,7 +921,7 @@ namespace CChess {
         return true;
     }
 
-    void ChessBoard::MoveConversion(const ChessMove &move, std::string *QiPu) {
+    bool ChessBoard::MoveConversion(const ChessMove &move, std::string *QiPu) {
         std::string Con;
         switch (board[move.start_x][move.start_y].type) {
             case Wang:
@@ -986,6 +978,7 @@ namespace CChess {
             default:
                 break;
         }
+        return true; // 暂时return true ,将来会重构该函数
     }
     std::string ChessBoard::GetNumberName(int number, bool is_red) {
         std::string name1[9] = {"一", "二", "三", "四", "五", "六", "七", "八", "九"};
@@ -1111,7 +1104,7 @@ namespace CChess {
             case Ma:
                 return 7;
             case Bing:
-                if (board_red) {
+                if (red_at_0) {
                     if (board[i][j].is_red) {
                         if (i < 5)
                             return 4;
@@ -1212,6 +1205,20 @@ namespace CChess {
         os << "start_x: " << move.start_x << " start_y: " << move.start_y << " end_x: " << move.end_x << " end_y: "
            << move.end_y;
         return os;
+    }
+
+    std::string getBoardResultStr(BoardResult res) {
+        switch (res) {
+            case RED_WIN:
+                return "RED_WIN";
+            case BLACK_WIN:
+                return "BLACK_WIN";
+            case NOT_END:
+                return "NOT_END";
+            default:
+                assert(false);
+                return "UNKNOWN";
+        }
     }
 
     std::string ChessMove::ToString() const {
