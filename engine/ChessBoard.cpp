@@ -14,6 +14,10 @@ using json = nlohmann::json;
 #include <chrono>
 
 namespace CChess {
+    inline bool isWithinBounds(int x, int y) {
+        return (x >= 0 && x < 10 && y >= 0 && y < 9);
+    }
+
     void
     ChessBoard::AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove> *moves) const {
         if (start_x != end_x || start_y != end_y) {
@@ -74,63 +78,35 @@ namespace CChess {
     }
 
     void ChessBoard::PaoRule(int row, int col, std::vector<ChessMove> *moves) const {
-        // 检查炮的水平向左移动
-        for (int i = col - 1; i >= 0; i--) {
-            if (board[row][i].IsEmpty()) {
-                AddMoveIfValid(row, col, row, i, moves);
-            } else {
-                for (int j = i - 1; j >= 0; j--) {
-                    if (!board[row][j].IsEmpty() && board[row][col].is_red != board[row][j].is_red) {
-                        AddMoveIfValid(row, col, row, j, moves);
+        int dir[4][2] = {{1,  0},
+                         {-1, 0},
+                         {0,  1},
+                         {0,  -1}};
+        int max_steps[4] = {9 - row, row, 8 - col, col};
+        for (int d = 0; d < 4; d++) {
+            int dx = dir[d][0], dy = dir[d][1];
+            int x = row, y = col;
+            bool cross = false;
+            while (max_steps[d]--) {
+                x += dx;
+                y += dy;
+                if (board[x][y].IsEmpty()) {
+                    if (cross) continue;
+                    else moves->emplace_back(row, col, x, y);
+                } else {
+                    if (cross) {
+                        if (board[x][y].is_red != board[row][col].is_red) {
+                            moves->emplace_back(row, col, x, y);
+                        }
                         break;
+                    } else {
+                        cross = true;
                     }
                 }
-                break;
-            }
-        }
-        // 检查炮的水平向右移动
-        for (int i = col + 1; i < 9; i++) {
-            if (board[row][i].IsEmpty()) {
-                AddMoveIfValid(row, col, row, i, moves);
-            } else {
-                for (int j = i + 1; j < 9; j++) {
-                    if (!board[row][j].IsEmpty() && board[row][col].is_red != board[row][j].is_red) {
-                        AddMoveIfValid(row, col, row, j, moves);
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        // 检查炮的垂直向上移动
-        for (int i = row - 1; i >= 0; i--) {
-            if (board[i][col].IsEmpty()) {
-                AddMoveIfValid(row, col, i, col, moves);
-            } else {
-                for (int j = i - 1; j >= 0; j--) {
-                    if (!board[j][col].IsEmpty() && board[row][col].is_red != board[j][col].is_red) {
-                        AddMoveIfValid(row, col, j, col, moves);
-                        break;
-                    }
-                }
-                break;
-            }
-        }
-        // 检查炮的垂直向下移动
-        for (int i = row + 1; i < 10; i++) {
-            if (board[i][col].IsEmpty()) {
-                AddMoveIfValid(row, col, i, col, moves);
-            } else {
-                for (int j = i + 1; j < 10; j++) {
-                    if (!board[j][col].type && board[row][col].is_red != board[j][col].is_red) {
-                        AddMoveIfValid(row, col, j, col, moves);
-                        break;
-                    }
-                }
-                break;
             }
         }
     }
+
 
     void ChessBoard::MaRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 八个可能的马脚位置
@@ -330,8 +306,6 @@ namespace CChess {
 
 
     void ChessBoard::GetMoves(bool is_red, std::vector<ChessMove> *moves) const {
-        //moves->reserve(1);
-        //moves->clear();
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 if (!board[row][col].IsEmpty()) {
