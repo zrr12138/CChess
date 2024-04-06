@@ -23,9 +23,10 @@ void test1() {
     board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
     board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
     board.SetChessAt(Chess(ChessType::Ju, true), 0, 8);*/
-    board.BoardRed(true);
+    board.BoardRed(false);
     board.initBoard();
     std::vector<ChessMove> moves;
+    ChessMove move;
     std::vector<Chess> dead;
     std::string QiPu;
     /*board.GetMovesFrom(2, 0, &moves);
@@ -33,52 +34,110 @@ void test1() {
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 0, 1)) != moves.end());
     assert(std::find(moves.begin(), moves.end(), ChessMove(2, 0, 4, 1)) != moves.end());
     */
-    board.Move(ChessMove(7, 1, 0 ,1));
+    int n = 100;
+    bool is_red_now = true;
+    while (n--) {
+        move = board.RandMove2(is_red_now);
+        board.MoveConversion(ChessMove(move), &QiPu);
+        assert(board.Move(ChessMove(move)));
+        // 如果错误，则有些地方move不合法
+        is_red_now = !is_red_now;
+        if (board.End() == BoardResult::BLACK_WIN) {
+            std::cout << "BlacK Win" << std::endl;
+            assert(board.EvaluatePosition() < 0);
+            break;
+        }
+        else if (board.End() == BoardResult::RED_WIN) {
+            std::cout << "Red Win" << std::endl;
+            assert(board.EvaluatePosition() > 0);
+            break;
+        }
+    }
+    std::string err;
+    assert(board.IsLegal(&err));
     board.GetDeadChess(&dead);
-    assert(dead.size() == 1);
+
+    //assert(dead.size() == 1);
 }
 
 void test2() {
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(true);
-    board.SetChessAt(Chess(ChessType::Ju, false), 1, 6);
-    board.SetChessAt(Chess(ChessType::Pao, true), 1, 8);
-    board.SetChessAt(Chess(ChessType::Ju, false), 1, 4);
+    board.initBoard();
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
-    board.GetMovesFrom(1,8,&moves);
-    assert(moves.size() ==  11);
-    assert(std::find(moves.begin(), moves.end(), ChessMove(1, 8 ,1, 4)) != moves.end());
+    ChessMove move;
+    std::string err;
+    move = board.RandMove2(false);
+    board.GetMovesFrom(move.start_x, move.start_y,&moves);
+    assert(moves.size() == 1 || moves.size() == 2 || moves.size() == 12);
+    move = board.RandMove2(true);
+    assert(moves.size() == 1 || moves.size() == 2 || moves.size() == 12);
+    assert(board.Move(ChessMove(9, 0, 6, 0)) == false);
+    assert(board.Move(ChessMove(9, 0, 5, 0)) == false);
+    assert(board.Move(ChessMove(9, 1, 8, 3)) == false);
+    assert(board.Move(ChessMove(0, 7, 1, 5)) == false);
+    //board.Move(ChessMove(9, 0, 7, 0));
+    assert(board.IsLegal(&err));
 }
 
 void test3() {
     ChessBoard board;
     board.BoardRed(true);
     board.ClearBoard();
-    board.SetChessAt(Chess(ChessType::Shi, true), 9, 5);
-    //board.SetChessAt(Chess(ChessType::Ju, true), 8, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 0);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 2);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 6);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 8);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 0);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 2);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 4);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 6);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 8);
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
-    board.GetMovesFrom(9,5,&moves);
+    board.GetMoves(true, &moves);
+    assert(moves.size() == 5);
+    board.GetMoves(false, &moves);
+    assert(moves.size() == 5);
+    board.GetMovesFrom(6, 8, &moves);
     assert(moves.size() == 1);
-    assert(std::find(moves.begin(), moves.end(), ChessMove(9, 5 ,8, 4)) != moves.end());
+    board.Move(ChessMove(3, 0, 4, 0));
+    board.Move(ChessMove(6, 0, 5, 0));
+    assert(board.Move(ChessMove(5, 0, 5, 1)) == false);
+    assert(board.Move(ChessMove(4, 0, 5, 0)));
+    board.GetMovesFrom(5, 0, &moves);
+    assert(moves.size() == 2);
 }
 
 void test4() {
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(false);
-    board.SetChessAt(Chess(ChessType::Bing, false), 1, 4);
-    board.SetChessAt(Chess(ChessType::Bing, true), 6,0);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 0);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 2);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 6);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 8);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 0);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 2);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 4);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 6);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 8);
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
-    board.GetMovesFrom(6,0,&moves);
+    board.GetMoves(true, &moves);
+    assert(moves.size() == 13);
+    board.GetMoves(false, &moves);
+    assert(moves.size() == 13);
+    board.GetMovesFrom(6, 6, &moves);
+    board.GetMovesFrom(6, 8, &moves);
     assert(moves.size() == 2);
-    assert(std::find(moves.begin(), moves.end(), ChessMove(6, 0 ,6, 1)) != moves.end());
-    assert(std::find(moves.begin(), moves.end(), ChessMove(6, 0 ,7, 0)) != moves.end());
-    board.GetMovesFrom(1,4,&moves);
-    assert(moves.size() == 3);
+    board.SetChessAt(Chess(ChessType::Ma, true), 7, 4);
+    board.GetMovesFrom(6, 4, &moves);
+    assert(moves.size() == 2);
 }
 
 void test5() {
@@ -87,14 +146,26 @@ void test5() {
     board.BoardRed(false);
     board.SetChessAt(Chess(ChessType::Xiang, false), 7, 4);
     board.SetChessAt(Chess(ChessType::Xiang, true), 0,2);
-    board.SetChessAt(Chess(ChessType::Bing, false), 1, 1);
+    board.SetChessAt(Chess(ChessType::Bing, true), 9, 7);
     board.SetChessAt(Chess(ChessType::Bing, true), 8,3);
+    board.SetChessAt(Chess(ChessType::Ma, true), 8, 4);
+    board.SetChessAt(Chess(ChessType::Ma, true), 8,5);
+    board.SetChessAt(Chess(ChessType::Shi, false), 9, 3);
+    board.SetChessAt(Chess(ChessType::Shi, false), 7,5);
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
     board.GetMovesFrom(7,4,&moves);
-    assert(moves.size() == 3);
-    assert(std::find(moves.begin(), moves.end(), ChessMove(7, 4 ,9, 6)) != moves.end());
+    assert(moves.size() == 2);
+    assert(std::find(moves.begin(), moves.end(), ChessMove(7, 4 ,5, 2)) != moves.end());
     assert(std::find(moves.begin(), moves.end(), ChessMove(7, 4 ,5, 6)) != moves.end());
+    board.GetMovesFrom(8,4,&moves);
+    assert(moves.size() == 0);
+    board.GetMovesFrom(8,5,&moves);
+    assert(moves.size() == 1);
+    board.GetMovesFrom(9,3,&moves);
+    assert(moves.size() == 1);
+    board.GetMovesFrom(9, 7, &moves);
+    assert(moves.size() == 2);
 }
 
 void test6() {
@@ -104,44 +175,73 @@ void test6() {
     std::vector<ChessMove> moves;
     std::vector<Chess> dead;
     std::string QiPu;
-    board.GetMovesFrom(7, 1, &moves);
+    board.GetMovesFrom(7, 7, &moves);
+    assert(moves.size() == 12);
+    board.Move(ChessMove(7, 7, 6, 7));
+    board.GetMovesFrom(6, 7 ,&moves);
+    assert(moves.size() == 6);
     board.MoveConversion(ChessMove(7, 1, 0, 1), &QiPu);
     board.Move(ChessMove(7, 1, 0, 1));
     assert(QiPu == "炮八进七");
-
+    board.MoveConversion(ChessMove(0, 1, 0, 3), &QiPu);
+    board.Move(ChessMove(0, 1, 0, 3));
+    assert(QiPu == "炮八平六");
+    board.MoveConversion(ChessMove(2, 7, 9, 7), &QiPu);
+    board.Move(ChessMove(2, 7, 9, 7));
+    assert(QiPu == "炮8进7");
+    board.initBoard();
+    board.MoveConversion(ChessMove(7, 1, 8, 1), &QiPu);
+    board.Move(ChessMove(7, 1, 8, 1));
+    assert(QiPu == "炮八退一");
+    board.MoveConversion(ChessMove(8, 1, 8, 7), &QiPu);
+    board.Move(ChessMove(8, 1, 8, 7));
+    assert(QiPu == "炮八平二");
+    board.MoveConversion(ChessMove(7, 7, 6, 7), &QiPu);
+    board.Move(ChessMove(7, 7, 6, 7));
+    assert(QiPu == "前炮进一");
+    board.MoveConversion(ChessMove(8, 7, 2, 7), &QiPu);
+    board.Move(ChessMove(8, 7, 2, 7));
+    assert(QiPu == "后炮进六");
 }
 
 void test7() {
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(false);
-    board.SetChessAt(Chess(ChessType::Wang, true), 2, 3);
-    board.SetChessAt(Chess(ChessType::Shi, true), 2,5);
-    board.SetChessAt(Chess(ChessType::Bing, false), 1, 1);
-    board.SetChessAt(Chess(ChessType::Shi, true), 1,4);
-    board.SetChessAt(Chess(ChessType::Xiang, true), 4,2);
-    board.SetChessAt(Chess(ChessType::Ma, true), 2,3);
-    //board.SetChessAt(Chess(ChessType::Ma, true), 6,3);
+    board.initBoard();
     std::string errorMessage;
-    bool success = board.IsLegal(&errorMessage);
-    //std::cout << errorMessage << std::endl;
+    ChessMove move;
+    std::string  QiPu;
+    std::vector<Chess> dead;
+    board.Move(ChessMove(7, 1, 0, 1));
+    board.Move(ChessMove(0, 1, 0, 3));
+    board.Move(ChessMove(0, 3, 0, 5));
+    board.Move(ChessMove(0, 5, 0, 2));
+    board.Move(ChessMove(0, 2, 0, 6));
+    board.Move(ChessMove(0, 6, 0, 0));
+    board.Move(ChessMove(0, 0, 0, 7));
     assert(board.IsLegal(&errorMessage) == true);
-
+    board.GetDeadChess(&dead);
+    assert(dead.size() == 7);
+    /*for (const Chess dead1: dead) {
+        std::cout << "Type: " << dead1.type << ", is_end: " << dead1.is_red << std::endl;
+    }*/
 }
 
 void test8() {
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(true);
-    board.SetChessAt(Chess(ChessType::Wang, false), 7, 4);
+    /*board.SetChessAt(Chess(ChessType::Wang, false), 7, 4);
     board.SetChessAt(Chess(ChessType::Shi, true), 7,5);
     board.SetChessAt(Chess(ChessType::Bing, false), 1, 1);
     board.SetChessAt(Chess(ChessType::Shi, true), 1,4);
     board.SetChessAt(Chess(ChessType::Xiang, true), 4,2);
-    board.SetChessAt(Chess(ChessType::Ma, true), 2,3);
-    std::cout << board.ToString() << std::endl;
+    board.SetChessAt(Chess(ChessType::Ma, true), 2,3);*/
+    board.initBoard();
+    //std::cout << board.ToString() << std::endl;
     board.ParseFromString(board.ToString());
-    board.PrintOnTerminal();
+    //board.PrintOnTerminal();
 }
 
 
@@ -178,17 +278,17 @@ void test10() {
     //board.initBoard();
     board.SetChessAt(Chess(ChessType::Ma, false), 3, 0);
     board.SetChessAt(Chess(ChessType::Ma, false), 3, 2);
-    /*board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
     board.SetChessAt(Chess(ChessType::Bing, false), 3, 6);
     board.SetChessAt(Chess(ChessType::Bing, false), 3, 8);
     board.SetChessAt(Chess(ChessType::Bing, true), 6, 0);
     board.SetChessAt(Chess(ChessType::Bing, true), 6, 2);
-    board.SetChessAt(Chess(ChessType::Bing, true), 6, 4);*/
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 4);
     board.SetChessAt(Chess(ChessType::Ma, true), 6, 6);
     board.SetChessAt(Chess(ChessType::Ma, true), 6, 8);
     ChessMove move(0, 0, 0, 0);
     std::map<std::pair<std::pair<int, int>, std::pair<int, int>>, int> frequency;
-    int n = 4;
+    int n = 10;
     bool  is_red_now = true;
     while (n--) {
         move = board.RandMove2(is_red_now);
@@ -209,8 +309,6 @@ void test10() {
                   << ") appears " << entry.second << " times." << std::endl;
     }
 
-
-
     std::vector<int> values;
     for (const auto& entry : frequency) {
         values.push_back(entry.second);
@@ -228,14 +326,13 @@ void test11() {
     board.ClearBoard();
     board.BoardRed(true);
     board.SetChessAt(Chess(ChessType::Shi, false), 0, 3);
-    board.SetChessAt(Chess(ChessType::Shi, false), 0, 5);
-    board.SetChessAt(Chess(ChessType::Shi, false), 1, 4);
-    board.SetChessAt(Chess(ChessType::Shi, false), 2, 3);
     board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
-    //std::vector<ChessMove> moves;
-    //board.GetMoves(&moves, false);
-    ChessMove move(0, 0, 0, 0);
-    std::map<std::pair<int, int>, int> frequency;
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 8, 3);
+    board.SetChessAt(Chess(ChessType::Shi, true), 7, 3);
+    std::vector<ChessMove> moves;
+    board.GetMovesFrom(8, 3, &moves);
+    assert(moves.size() == 1);
 }
 
 
@@ -258,6 +355,7 @@ int main(int argc, char *argv[]) {
     test5();
     test6();
     test7();
+    test8();
     test10();
     test11();
     //test12();
