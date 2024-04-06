@@ -74,7 +74,6 @@ namespace CChess {
         std::atomic<bool> stop_,actioning;
         std::atomic<int> pause_cnt_;
         common::ThreadPool threadPool;
-
         Node* root_node_;
         ChessBoard root_board_;
 

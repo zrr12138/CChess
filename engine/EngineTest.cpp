@@ -11,15 +11,14 @@
 #include <chrono>
 #include <common/timeutility.h>
 #include "MCTSEngine.h"
-
+#include <random>
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 using namespace CChess;
 
 void test1() {
-
     ChessBoard board;
-    board.BoardRed(true);
+    //board.BoardRed(true);
     board.initBoard();
     MCTSEngine engine(1);
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <chrono>
 
 namespace CChess {
     void
@@ -201,12 +202,36 @@ namespace CChess {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
             if (3 <= end_y && end_y <= 5) {
-                if ((end_x < 3 && end_x >= 0) || (end_x > 6 && end_x <= 9)) {
+                if (end_x < 3 && end_x >= 0) {
                     if (board[end_x][end_y].IsEmpty()) {
-                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                        for (int j = row + 1; j < 10; j++) {
+                            if (board[j][end_y].type != Wang  && board[j][end_y].type != Empty) {
+                                AddMoveIfValid(row, col, end_x, end_y, moves);
+                            }
+                        }
                     } else {
                         if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            AddMoveIfValid(row, col, end_x, end_y, moves);
+                            for (int j = row + 1; j < 10; j++) {
+                                if (board[j][end_y].type != Wang  && board[j][end_y].type != Empty) {
+                                    AddMoveIfValid(row, col, end_x, end_y, moves);
+                                }
+                            }
+                        }
+                    }
+                } else if (end_x > 6 && end_x <= 9) {
+                    if (board[end_x][end_y].IsEmpty()) {
+                        for (int j = row - 1; j >= 0; j--) {
+                            if (board[j][end_y].type != Wang  && board[j][end_y].type != Empty) {
+                                AddMoveIfValid(row, col, end_x, end_y, moves);
+                            }
+                        }
+                    } else {
+                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            for (int j = row - 1; j >= 0; j--) {
+                                if (board[j][end_y].type != Wang  && board[j][end_y].type != Empty) {
+                                    AddMoveIfValid(row, col, end_x, end_y, moves);
+                                }
+                            }
                         }
                     }
                 }
@@ -281,6 +306,7 @@ namespace CChess {
 
     void ChessBoard::GetMoves(bool is_red, std::vector<ChessMove> *moves) const{
         //moves->reserve(1);
+        //moves->clear();
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 if (!board[row][col].IsEmpty()) {
@@ -323,6 +349,8 @@ namespace CChess {
     }
 
     bool ChessBoard::Move(const ChessMove &move) {
+        std::string err;
+        assert(IsLegal(&err));
         assert(0 <= move.end_x && move.end_x < 10);
         assert(0 <= move.end_x && move.end_y < 9);
         auto &end_chess= board[move.end_x][move.end_y];
@@ -625,16 +653,30 @@ namespace CChess {
         //auto &chess = board[move.end_x][move.end_y];
         board[move.end_x][move.end_y] = board[move.start_x][move.start_y];
         board[move.start_x][move.start_y].type = Empty;
-        if (board[0][3].type != Wang && board[1][3].type != Wang && board[2][3].type != Wang &&
-            board[0][4].type != Wang && board[1][4].type != Wang && board[2][4].type != Wang &&
-            board[0][5].type != Wang && board[1][5].type != Wang && board[2][5].type != Wang) {
-            is_end = BoardResult::RED_WIN;
-        } else if (board[7][3].type != Wang && board[8][3].type != Wang && board[9][3].type != Wang &&
-                   board[7][4].type != Wang && board[8][4].type != Wang && board[9][4].type != Wang &&
-                   board[7][5].type != Wang && board[8][5].type != Wang && board[9][5].type != Wang) {
-            is_end = BoardResult::BLACK_WIN;
+        if (board_red) {
+            if (board[0][3].type != Wang && board[1][3].type != Wang && board[2][3].type != Wang &&
+                board[0][4].type != Wang && board[1][4].type != Wang && board[2][4].type != Wang &&
+                board[0][5].type != Wang && board[1][5].type != Wang && board[2][5].type != Wang) {
+                is_end = BoardResult::RED_WIN;
+            } else if (board[7][3].type != Wang && board[8][3].type != Wang && board[9][3].type != Wang &&
+                       board[7][4].type != Wang && board[8][4].type != Wang && board[9][4].type != Wang &&
+                       board[7][5].type != Wang && board[8][5].type != Wang && board[9][5].type != Wang) {
+                is_end = BoardResult::BLACK_WIN;
+            } else {
+                is_end = BoardResult::NOT_END;
+            }
         } else {
-            is_end = BoardResult::NOT_END;
+            if (board[0][3].type != Wang && board[1][3].type != Wang && board[2][3].type != Wang &&
+                board[0][4].type != Wang && board[1][4].type != Wang && board[2][4].type != Wang &&
+                board[0][5].type != Wang && board[1][5].type != Wang && board[2][5].type != Wang) {
+                is_end = BoardResult::BLACK_WIN;
+            } else if (board[7][3].type != Wang && board[8][3].type != Wang && board[9][3].type != Wang &&
+                       board[7][4].type != Wang && board[8][4].type != Wang && board[9][4].type != Wang &&
+                       board[7][5].type != Wang && board[8][5].type != Wang && board[9][5].type != Wang) {
+                is_end = BoardResult::RED_WIN;
+            } else {
+                is_end = BoardResult::NOT_END;
+            }
         }
     }
 
@@ -1359,16 +1401,16 @@ namespace CChess {
 
     ChessMove ChessBoard::RandMove2(bool is_red) {
         assert(is_end == NOT_END);
-        ChessMove move(0, 0, 0, 0);
-        //std::cout << move.end_x << " " << move.end_y << std::endl;
+        //ChessMove move(0, 0, 0, 0);
         std::vector<ChessMove> moves;
         GetMoves(is_red, &moves);
         std::random_device rd;
-        xorshift_state = rd();
-        std::size_t index = Xorshift32() % moves.size();
-        move = moves[index];
-        //std::cout << move.end_x << " " << move.end_y << std::endl;
-        return move;
+        //uint32_t seed = static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count());
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<std::size_t> dist(0,moves.size() - 1);
+        std::size_t index = dist(gen);
+        //move = moves[index];
+        return moves[index];
     }
 
     uint32_t ChessBoard::Xorshift32()  {

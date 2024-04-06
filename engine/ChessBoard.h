@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <ostream>
+#include <random>
 
 namespace CChess {
     enum ChessType {
@@ -62,10 +63,10 @@ namespace CChess {
     private:
         Chess board[10][9];
 
-        bool board_red;
+        bool board_red{};
         BoardResult is_end;
-        bool is_init;
-        int move_num;
+        bool is_init{};
+        int move_num{};
         std::vector<Chess> Total;
         uint32_t xorshift_state;
 
@@ -96,6 +97,7 @@ namespace CChess {
         static bool ChessComparator(const Chess& chess1, const Chess& chess2);
 
     public:
+
         ChessBoard();
 
         void BoardRed(bool is_red);

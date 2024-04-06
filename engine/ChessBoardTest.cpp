@@ -175,12 +175,20 @@ void test10() {
     ChessBoard board;
     board.ClearBoard();
     board.BoardRed(true);
-    board.initBoard();
-    //std::vector<ChessMove> moves;
-    //board.GetMoves(&moves, false);
+    //board.initBoard();
+    board.SetChessAt(Chess(ChessType::Ma, false), 3, 0);
+    board.SetChessAt(Chess(ChessType::Ma, false), 3, 2);
+    /*board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 6);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 8);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 0);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 2);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 4);*/
+    board.SetChessAt(Chess(ChessType::Ma, true), 6, 6);
+    board.SetChessAt(Chess(ChessType::Ma, true), 6, 8);
     ChessMove move(0, 0, 0, 0);
     std::map<std::pair<std::pair<int, int>, std::pair<int, int>>, int> frequency;
-    int n = 1000000;
+    int n = 4;
     bool  is_red_now = true;
     while (n--) {
         move = board.RandMove2(is_red_now);
