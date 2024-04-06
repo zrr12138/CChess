@@ -30,15 +30,16 @@ def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
         else:
             end_chess = ctx.board.get_chess(x, y)
             start_chess = ctx.board.get_chess(ctx.choose_pos[0], ctx.choose_pos[1])
-            if start_chess.type != ChessType.Empty and end_chess.type == ChessType.Empty:
-                if ctx.status != Status.PLACE:
-                    ctx.board = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
-                    pass
-                else:
+            if ctx.status == Status.PLACE:
+                if start_chess.type != ChessType.Empty:
                     ctx.board.set_chess(x, y, start_chess)
                     ctx.board.clear_chess(ctx.choose_pos[0], ctx.choose_pos[1])
+                    ctx.choose_pos = None
+                else:
+                    ctx.choose_pos = (x, y)
             else:
-                ctx.choose_pos = (x, y)
+                ctx.board = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
+                ctx.choose_pos = None
 
 
 def handle_key_down(ctx, event):
@@ -118,6 +119,8 @@ while ctx.running:
     screen.fill((255, 255, 255))
     gui_manager.update(pygame.time.Clock().tick(60) / 1000.0)
     ctx.board.draw(screen)
+    if ctx.choose_pos is not None:
+        ctx.board.highlight(screen, ctx.choose_pos[0], ctx.choose_pos[1], (255, 0, 0))
     think_text_box.set_text(ctx.think_text)
     help_text_box.set_text(ctx.help_text)
     gui_manager.draw_ui(screen)
