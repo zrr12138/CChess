@@ -66,13 +66,10 @@ namespace CChess {
         Chess board[10][9];
 
         bool board_red{};
-        BoardResult is_end;
-        bool is_init{};
-        int move_num{};
+        BoardResult end;
         std::vector<Chess> Total;
         uint32_t xorshift_state;
 
-        void update_board_from(ChessMove move); // 判断局面是否结束
 
         void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
 
