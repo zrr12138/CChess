@@ -87,7 +87,13 @@ namespace CChess {
 
         void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        std::string Conversion(const ChessMove &move, std::string conversion);
+        std::string Conversion1(const ChessMove &move, std::string conversion);
+
+        std::string Conversion2(const ChessMove &move, std::string conversion);
+
+        std::string GetNumberName(int number, bool is_red);
+
+        std::string GetFileRank(const ChessMove &move, bool isRed, std::string &Con);
 
         uint32_t Xorshift32();
 

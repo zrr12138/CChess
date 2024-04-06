@@ -169,10 +169,7 @@ namespace CChess {
 
     void ChessBoard::ShiRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 五个可能的士的位置
-        int offsets[4][2] = {{-1, -1},
-                             {-1, 1},
-                             {1,  -1},
-                             {1,  1}};
+        int offsets[4][2] = {{-1, -1},{-1, 1},{1,  -1},{1,  1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
@@ -192,10 +189,7 @@ namespace CChess {
 
     void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 四个可能的帅的移动位置
-        int offsets[4][2] = {{-1, 0},
-                             {0,  1},
-                             {1,  0},
-                             {0,  -1}};
+        int offsets[4][2] = {{-1, 0},{0,  1},{1,  0}, {0,  -1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
@@ -205,6 +199,7 @@ namespace CChess {
                         for (int j = row + 1; j < 10; j++) {
                             if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
                                 AddMoveIfValid(row, col, end_x, end_y, moves);
+                                break;
                             }
                         }
                     } else {
@@ -212,6 +207,7 @@ namespace CChess {
                             for (int j = row + 1; j < 10; j++) {
                                 if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
                                     AddMoveIfValid(row, col, end_x, end_y, moves);
+                                    break;
                                 }
                             }
                         }
@@ -221,6 +217,7 @@ namespace CChess {
                         for (int j = row - 1; j >= 0; j--) {
                             if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
                                 AddMoveIfValid(row, col, end_x, end_y, moves);
+                                break;
                             }
                         }
                     } else {
@@ -228,6 +225,7 @@ namespace CChess {
                             for (int j = row - 1; j >= 0; j--) {
                                 if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
                                     AddMoveIfValid(row, col, end_x, end_y, moves);
+                                    break;
                                 }
                             }
                         }
@@ -306,6 +304,7 @@ namespace CChess {
 
 
     void ChessBoard::GetMoves(bool is_red, std::vector<ChessMove> *moves) const {
+        moves->clear();
         for (int row = 0; row < 10; row++) {
             for (int col = 0; col < 9; col++) {
                 if (!board[row][col].IsEmpty()) {
@@ -471,18 +470,32 @@ namespace CChess {
         }
     }
 
-
     void ChessBoard::GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const {
-        GetMoves(board[x][y].is_red, move);
-        auto it = move->begin();
-        while (it != move->end()) {
-            int start_x = it->start_x;
-            int start_y = it->start_y;
-            if (start_x != x || start_y != y) {
-                it = move->erase(it);
-            } else {
-                it++;
-            }
+        move->clear();
+        switch (board[x][y].type) {
+            case Ju:
+                JuRule(x, y, move);
+                break;
+            case Pao:
+                PaoRule(x, y, move);
+                break;
+            case Ma:
+                MaRule(x, y, move);
+                break;
+            case Xiang:
+                XiangRule(x, y, move);
+                break;
+            case Shi:
+                ShiRule(x, y, move);
+                break;
+            case Wang:
+                WangRule(x, y, move);
+                break;
+            case Bing:
+                BingRule(x, y, move);
+                break;
+            default:
+                break;
         }
     }
 
@@ -736,82 +749,28 @@ namespace CChess {
                         }
                         break;
                     case Shi:
+                        int position;
+                        position = i + j;
                         if (board_red) {
                             if (board[i][j].is_red) {
-                                if (j == 3 || j == 5) {
-                                    if (i == 0 || i == 2)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "仕越界";
-                                        return false;
-                                    }
-                                } else if (j == 4) {
-                                    if (i == 1)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "仕越界";
-                                        return false;
-                                    }
-                                } else {
-                                    *errorMessage = "仕越界";
+                                if (position % 2 != 0) {
+                                    *errorMessage = "士越界";
                                     return false;
                                 }
                             } else {
-                                if (j == 3 || j == 5) {
-                                    if (i == 7 || i == 9)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "士越界";
-                                        return false;
-                                    }
-                                } else if (j == 4) {
-                                    if (i == 8)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "士越界";
-                                        return false;
-                                    }
-                                } else {
-                                    *errorMessage = "士越界";
+                                if (position % 2 == 0) {
+                                    *errorMessage = "仕越界";
                                     return false;
                                 }
                             }
                         } else {
                             if (board[i][j].is_red) {
-                                if (j == 3 || j == 5) {
-                                    if (i == 0 || i == 2)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "士越界";
-                                        return false;
-                                    }
-                                } else if (j == 4) {
-                                    if (i == 1)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "士越界";
-                                        return false;
-                                    }
-                                } else {
+                                if (position % 2 == 0) {
                                     *errorMessage = "士越界";
                                     return false;
                                 }
                             } else {
-                                if (j == 3 || j == 5) {
-                                    if (i == 7 || i == 9)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "仕越界";
-                                        return false;
-                                    }
-                                } else if (j == 4) {
-                                    if (i == 8)
-                                        *errorMessage = "合法";
-                                    else {
-                                        *errorMessage = "仕越界";
-                                        return false;
-                                    }
-                                } else {
+                                if (position % 2 != 0) {
                                     *errorMessage = "仕越界";
                                     return false;
                                 }
@@ -979,21 +938,21 @@ namespace CChess {
                 } else {
                     Con = "将";
                 }
-                Con = Conversion(move, Con);
+                Con = Conversion1(move, Con);
                 *QiPu = Con;
                 break;
             case Ma:
                 Con = "马";
-                Con = Conversion(move, Con);
+                Con = Conversion2(move, Con);
                 *QiPu = Con;
                 break;
             case Bing:
                 if (board[move.start_x][move.start_y].is_red) {
                     Con = "兵";
                 } else {
-                    Con = "将卒";
+                    Con = "卒";
                 }
-                Con = Conversion(move, Con);
+                Con = Conversion1(move, Con);
                 *QiPu = Con;
                 break;
             case Shi:
@@ -1002,17 +961,17 @@ namespace CChess {
                 } else {
                     Con = "仕";
                 }
-                Con = Conversion(move, Con);
+                Con = Conversion2(move, Con);
                 *QiPu = Con;
                 break;
             case Ju:
                 Con = "车";
-                Con = Conversion(move, Con);
+                Con = Conversion1(move, Con);
                 *QiPu = Con;
                 break;
             case Pao:
                 Con = "炮";
-                Con = Conversion(move, Con);
+                Con = Conversion1(move, Con);
                 *QiPu = Con;
                 break;
             case Xiang:
@@ -1021,264 +980,71 @@ namespace CChess {
                 } else {
                     Con = "象";
                 }
-                Con = Conversion(move, Con);
+                Con = Conversion2(move, Con);
                 *QiPu = Con;
                 break;
             default:
                 break;
         }
     }
+    std::string ChessBoard::GetNumberName(int number, bool is_red) {
+        std::string name1[9] = {"一", "二", "三", "四", "五", "六", "七", "八", "九"};
+        std::string name2[9] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+        if (is_red)
+            return name1[number];
+        else
+            return name2[number];
+    }
 
-    std::string ChessBoard::Conversion(const ChessMove &move, std::string conversion) {
-        std::string Rename1;
-        std::string Baname1;
-        std::string Rename2;
-        std::string Baname2;
-        std::string Rename3;
-        std::string Baname3;
-        switch (move.start_y) {
-            case 0:
-                Rename1 = "九";
-                Baname1 = "1";
-                break;
-            case 1:
-                Rename1 = "八";
-                Baname1 = "2";
-                break;
-            case 2:
-                Rename1 = "七";
-                Baname1 = "3";
-                break;
-            case 3:
-                Rename1 = "六";
-                Baname1 = "4";
-                break;
-            case 4:
-                Rename1 = "五";
-                Baname1 = "5";
-                break;
-            case 5:
-                Rename1 = "四";
-                Baname1 = "6";
-                break;
-            case 6:
-                Rename1 = "三";
-                Baname1 = "7";
-                break;
-            case 7:
-                Rename1 = "二";
-                Baname1 = "8";
-                break;
-            case 8:
-                Rename1 = "一";
-                Baname1 = "9";
-                break;
-            default:
-                break;
-        }
-        switch (abs(move.start_x - move.end_x)) {
-            case 9:
-                Rename2 = "九";
-                Baname2 = "9";
-                break;
-            case 8:
-                Rename2 = "八";
-                Baname2 = "8";
-                break;
-            case 7:
-                Rename2 = "七";
-                Baname2 = "7";
-                break;
-            case 6:
-                Rename2 = "六";
-                Baname2 = "6";
-                break;
-            case 5:
-                Rename2 = "五";
-                Baname2 = "5";
-                break;
-            case 4:
-                Rename2 = "四";
-                Baname2 = "4";
-                break;
-            case 3:
-                Rename2 = "三";
-                Baname2 = "3";
-                break;
-            case 2:
-                Rename2 = "二";
-                Baname2 = "2";
-                break;
-            case 1:
-                Rename2 = "一";
-                Baname2 = "1";
-                break;
-            default:
-                break;
-        }
-        switch (move.end_y) {
-            case 0:
-                Rename3 = "九";
-                Baname3 = "1";
-                break;
-            case 1:
-                Rename3 = "八";
-                Baname3 = "2";
-                break;
-            case 2:
-                Rename3 = "七";
-                Baname3 = "3";
-                break;
-            case 3:
-                Rename3 = "六";
-                Baname3 = "4";
-                break;
-            case 4:
-                Rename3 = "五";
-                Baname3 = "5";
-                break;
-            case 5:
-                Rename3 = "四";
-                Baname3 = "6";
-                break;
-            case 6:
-                Rename3 = "三";
-                Baname3 = "7";
-                break;
-            case 7:
-                Rename3 = "二";
-                Baname3 = "8";
-                break;
-            case 8:
-                Rename3 = "一";
-                Baname3 = "9";
-                break;
-            default:
-                break;
-        }
-        if (board[move.start_x][move.start_y].type != Ma && board[move.start_x][move.start_y].type != Shi &&
-            board[move.start_x][move.start_y].type != Xiang) {
-            for (int i = 0; i < 10; i++) {
-                if (i != move.start_x && board[i][move.start_y].is_red == board[move.start_x][move.start_y].is_red &&
-                    board[i][move.start_y].type == board[move.start_x][move.start_y].type) {
-                    if (board[move.start_x][move.start_y].is_red) {
-                        if (i > move.start_x) {
-                            if (move.start_x > move.end_x) {
-                                conversion.insert(0, "前");
-                                conversion += "进";
-                                conversion += Rename2;
-                            } else if (move.start_x < move.end_x) {
-                                conversion.insert(0, "前");
-                                conversion += "退";
-                                conversion += Rename2;
-                            } else {
-                                conversion.insert(0, "前");
-                                conversion += "平";
-                                conversion += Rename3;
-                            }
-                        } else {
-                            if (move.start_x > move.end_x) {
-                                conversion.insert(0, "后");
-                                conversion += "进";
-                                conversion += Rename2;
-                            } else if (move.start_x < move.end_x) {
-                                conversion.insert(0, "后");
-                                conversion += "退";
-                                conversion += Rename2;
-                            } else {
-                                conversion.insert(0, "后");
-                                conversion += "平";
-                                conversion += Rename3;
-                            }
-                        }
-                    } else {
-                        if (i > move.start_x) {
-                            if (move.start_x > move.end_x) {
-                                conversion.insert(0, "前");
-                                conversion += "退";
-                                conversion += Baname2;
-                            } else if (move.start_x < move.end_x) {
-                                conversion.insert(0, "前");
-                                conversion += "进";
-                                conversion += Baname2;
-                            } else {
-                                conversion.insert(0, "前");
-                                conversion += "平";
-                                conversion += Baname3;
-                            }
-                        } else {
-                            if (move.start_x > move.end_x) {
-                                conversion.insert(0, "后");
-                                conversion += "退";
-                                conversion += Baname2;
-                            } else if (move.start_x < move.end_x) {
-                                conversion.insert(0, "后");
-                                conversion += "进";
-                                conversion += Baname2;
-                            } else {
-                                conversion.insert(0, "后");
-                                conversion += "平";
-                                conversion += Baname3;
-                            }
-                        }
-                    }
+    std::string ChessBoard::GetFileRank(const ChessMove& move, bool isRed, std::string &conversion) {
+        bool Chong = false;
+        for (int i = 0; i < 10; i++) {
+            if (board[i][move.start_y].type == board[move.start_x][move.start_y].type &&
+                board[i][move.start_y].is_red == board[move.start_x][move.start_y].is_red) {
+                if (i > move.start_x) {
+                    conversion.insert(0, "前");
+                    Chong = true;
                     break;
-                } else {
-                    if (board[move.start_x][move.start_y].is_red) {
-                        if (move.start_x > move.end_x) {
-                            conversion += Rename1;
-                            conversion += "进";
-                            conversion += Rename2;
-                        } else if (move.start_x < move.end_x) {
-                            conversion += Rename1;
-                            conversion += "退";
-                            conversion += Rename2;
-                        } else {
-                            conversion += Rename1;
-                            conversion += "平";
-                            conversion += Rename3;
-                        }
-                    } else {
-                        if (move.start_x > move.end_x) {
-                            conversion += Baname1;
-                            conversion += "退";
-                            conversion += Baname2;
-                        } else if (move.start_x < move.end_x) {
-                            conversion += Baname1;
-                            conversion += "进";
-                            conversion += Baname2;
-                        } else {
-                            conversion += Baname1;
-                            conversion += "平";
-                            conversion += Baname3;
-                        }
-                    }
+                } else if (i < move.start_x) {
+                    conversion.insert(0, "后");
+                    Chong = true;
                     break;
                 }
+            }
+        }
+        if (!Chong) {
+            if (isRed)
+                conversion += GetNumberName(8 - move.start_y, isRed);
+            else
+                conversion += std::to_string(move.start_y + 1);
+        }
+        return conversion;
+    }
 
-            }
-        } else {
-            if (board[move.start_x][move.start_y].is_red) {
-                if (move.start_x > move.end_x) {
-                    conversion += Rename1;
-                    conversion += "进";
-                    conversion += Rename3;
-                } else if (move.start_x < move.end_x) {
-                    conversion += Rename1;
-                    conversion += "退";
-                    conversion += Rename3;
-                }
-            } else {
-                if (move.start_x > move.end_x) {
-                    conversion += Baname1;
-                    conversion += "退";
-                    conversion += Baname3;
-                } else if (move.start_x < move.end_x) {
-                    conversion += Baname1;
-                    conversion += "进";
-                    conversion += Baname3;
-                }
-            }
+    std::string ChessBoard::Conversion1(const ChessMove& move, std::string conversion) {
+        bool isRed = board[move.start_x][move.start_y].is_red;
+        conversion = GetFileRank(move, isRed, conversion);
+        if (move.start_x == move.end_x) {
+            conversion += "平" + GetNumberName(8 - move.end_y, isRed);
+        } else if (move.start_x > move.end_x) {
+            conversion += (board_red == isRed) ? "进" : "退";
+            conversion += GetNumberName(move.start_x - move.end_x - 1, isRed);
+        } else if (move.start_x < move.end_x) {
+            conversion += (board_red == isRed) ? "退" : "进";
+            conversion += GetNumberName(move.end_x - move.start_x - 1, isRed);
+        }
+        return conversion;
+    }
+
+    std::string ChessBoard::Conversion2(const ChessMove& move, std::string conversion) {
+        bool isRed = board[move.start_x][move.start_y].is_red;
+        conversion = GetFileRank(move, isRed, conversion);
+        if (move.start_x > move.end_x) {
+            conversion += (board_red == isRed) ? "进" : "退";
+            conversion += GetNumberName(move.start_x - move.end_x - 1, isRed);
+        } else if (move.start_x < move.end_x) {
+            conversion += (board_red == isRed) ? "退" : "进";
+            conversion += GetNumberName(move.end_x - move.start_x - 1, isRed);
         }
         return conversion;
     }
@@ -1299,7 +1065,7 @@ namespace CChess {
     }*/
 
     ChessMove ChessBoard::RandMove2(bool is_red) {
-        assert(end == NOT_END);
+        //assert(end == NOT_END);
         //ChessMove move(0, 0, 0, 0);
         std::vector<ChessMove> moves;
         GetMoves(is_red, &moves);
@@ -1409,6 +1175,7 @@ namespace CChess {
             return false;
         }
     }
+
 
     Chess::Chess(ChessType type, bool isRed) : type(type), is_red(isRed) {}
 
