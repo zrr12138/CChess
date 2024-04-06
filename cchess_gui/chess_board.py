@@ -3,6 +3,7 @@ from enum import IntEnum
 import pygame
 from surface_cache import SurfaceCache
 import copy
+import json
 
 
 class ChessType(IntEnum):
@@ -115,6 +116,42 @@ class ChessBoard:
         row = (pixel_y - Chess.begin_y + Chess.bias) // Chess.cell_size
         return row, col
 
+    def clear_board(self):
+        for row in range(10):
+            for col in range(9):
+                self.board[row][col] = Chess(ChessType.Empty, False)
+
+    def parse_from_string(self, string):
+        json_board = json.loads(string)
+        self.clear_board()
+        for jsonChess in json_board:
+            row = jsonChess["row"]
+            col = jsonChess["col"]
+            chess_type = ChessType(jsonChess["type"])
+            is_red = jsonChess["is_red"]
+            assert chess_type != ChessType.Empty
+            assert 0 <= row < 10
+            assert 0 <= col < 9
+            chess = Chess(chess_type, is_red)
+            self.set_chess(row, col, chess)
+
+    def to_string(self):
+        json_board = []
+        for row in range(10):
+            for col in range(9):
+                chess = self.board[row][col]
+                if chess.type == ChessType.Empty:
+                    continue
+                json_chess = {
+                    "type": chess.type,
+                    "is_red": chess.is_red,
+                    "row": row,
+                    "col": col
+                }
+                json_board.append(json_chess)
+
+        return json.dumps(json_board)
+
 
 class Move:
     def __init__(self, start_x, start_y, end_x, end_y):
@@ -125,3 +162,19 @@ class Move:
 
     def __le__(self, rhs):
         return self.start_x <= rhs.start_x and self.start_y <= rhs.start_y and self.end_x <= rhs.end_x and self.end_y <= rhs.end_y
+
+    def to_string(self):
+        json_move = {
+            "start_x": self.start_x,
+            "start_y": self.start_y,
+            "end_x": self.end_x,
+            "end_y": self.end_y
+        }
+        return json.dumps(json_move)
+
+    def parse_from_string(self, string):
+        json_move = json.loads(string)
+        self.start_x = json_move["start_x"]
+        self.start_y = json_move["start_y"]
+        self.end_x = json_move["end_x"]
+        self.end_y = json_move["end_y"]
