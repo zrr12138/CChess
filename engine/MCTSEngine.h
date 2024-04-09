@@ -69,6 +69,8 @@ namespace CChess {
 
         void FreeTree(Node *node);
 
+        bool IsRunning();
+
     private:
         const double C;
         std::atomic<bool> stop_,actioning;

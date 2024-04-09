@@ -1,13 +1,17 @@
 //
 // Created by zhengran on 2024/3/17.
 //
+
 #include "crow.h"
 #include "ChessBoard.h"
+#include "MCTSEngine.h"
 #include "glog/logging.h"
 #include "gflags/gflags.h"
 #include "errorcode.h"
 
 using namespace CChess;
+
+DEFINE_int32(thread_num, 8, "");
 
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
@@ -15,6 +19,7 @@ int main(int argc, char *argv[]) {
     FLAGS_log_dir = ".";
     FLAGS_v = 2;
     ChessBoard board;
+    MCTSEngine engine(FLAGS_thread_num);
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")([&]() {
@@ -38,6 +43,39 @@ int main(int argc, char *argv[]) {
 //        board.Move(move);
 //        return crow::response(200);
 //    });
+
+    //engine api
+    CROW_ROUTE(app, "/start_search").methods(crow::HTTPMethod::Post)([&](const crow::request &req) {
+        auto req_json = crow::json::load(req.body);
+        LOG(INFO) << "/start_search " << req.body;
+        if (!req_json) {
+            return crow::json::wvalue({{"error", BAD_ARGUMENT}});
+        }
+        if (!req_json.has("board")||!req_json.has("red_first")) {
+            return crow::json::wvalue({{"error", ARGUMENT_NOT_ENOUGH}});
+        }
+        bool red_first=req_json["red_first"].b();
+        ChessBoard board;
+        board.ParseFromString(req_json["board"].s());
+        if(engine.StartSearch(board,red_first))
+        {
+            return crow::json::wvalue({{"error", OK}});
+        }
+        else{
+            return crow::json::wvalue({{"error", START_SEARCH_FAILED}});
+        }
+    });
+
+    CROW_ROUTE(app, "/engine_action")([&](const crow::request &req) {
+
+        engine
+        {
+            return crow::json::wvalue({{"error", OK}});
+        }
+        else{
+            return crow::json::wvalue({{"error", START_SEARCH_FAILED}});
+        }
+    });
 
     //board api
     CROW_ROUTE(app, "/init_board")([&](const crow::request &req) {

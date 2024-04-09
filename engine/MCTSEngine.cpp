@@ -193,6 +193,10 @@ namespace CChess {
         return node.Simulation(&ctx);
     }
 
+    bool MCTSEngine::IsRunning() {
+        return !stop_;
+    }
+
 
     Node::Node(bool is_red, MCTSEngine *engine) : is_red(is_red), n(0), black_win_count(0), red_win_count(0),
                                                   engine_(engine), access_cnt(0), inited(false), move_node_(nullptr),
