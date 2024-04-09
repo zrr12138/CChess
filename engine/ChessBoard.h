@@ -69,6 +69,7 @@ namespace CChess {
         Chess board[10][9];
 
         bool red_at_0{};
+
         BoardResult end;
         std::vector<Chess> Total;
         uint32_t xorshift_state{};
@@ -98,6 +99,8 @@ namespace CChess {
 
         std::string GetFileRank(const ChessMove &move, bool isRed, std::string &Con);
 
+        std::string GetColNumber(int col,bool is_red);
+
         uint32_t Xorshift32();
 
         int GetPieceValue(int x, int y, ChessType chess);
@@ -106,9 +109,9 @@ namespace CChess {
 
     public:
 
-        ChessBoard();
+        explicit ChessBoard(bool red_at_0);
 
-        void BoardRed(bool is_red);
+        ChessBoard();
 
         void GetMoves(bool is_red, std::vector<ChessMove> *moves) const;
 
@@ -145,6 +148,8 @@ namespace CChess {
         int EvaluatePosition();
 
         void GetDeadChess (std::vector<Chess> *dead);
+
+        void Reverse();
 
     };
 }

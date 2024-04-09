@@ -169,7 +169,10 @@ namespace CChess {
 
     void ChessBoard::ShiRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 五个可能的士的位置
-        int offsets[4][2] = {{-1, -1},{-1, 1},{1,  -1},{1,  1}};
+        int offsets[4][2] = {{-1, -1},
+                             {-1, 1},
+                             {1,  -1},
+                             {1,  1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
@@ -189,7 +192,10 @@ namespace CChess {
 
     void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 四个可能的帅的移动位置
-        int offsets[4][2] = {{-1, 0},{0,  1},{1,  0}, {0,  -1}};
+        int offsets[4][2] = {{-1, 0},
+                             {0,  1},
+                             {1,  0},
+                             {0,  -1}};
         for (int i = 0; i < 4; i++) {
             int end_x = row + offsets[i][0];
             int end_y = col + offsets[i][1];
@@ -246,7 +252,7 @@ namespace CChess {
         for (int i = 0; i < 3; i++) {
             int end_x;
             int end_y;
-            if ((board[row][col].is_red && red_at_0) || (!board[row][col].is_red && !red_at_0)) {
+            if ((board[row][col].is_red && !red_at_0) || (!board[row][col].is_red && red_at_0)) {
                 if (row < 5) {
                     end_x = row + ReGuohe[i][0];
                     end_y = col + ReGuohe[i][1];
@@ -272,7 +278,7 @@ namespace CChess {
                         }
                     }
                 }
-            } else if ((!board[row][col].is_red && red_at_0) || (board[row][col].is_red && !red_at_0)) {
+            } else if ((!board[row][col].is_red && !red_at_0) || (board[row][col].is_red && red_at_0)) {
                 if (row > 4) {
                     end_x = row + BaGuohe[i][0];
                     end_y = col + BaGuohe[i][1];
@@ -341,7 +347,7 @@ namespace CChess {
 
     Chess ChessBoard::GetChessAt(int x, int y) const {
         assert(0 <= x && x < 10);
-        assert(0 <= x && x < 9);
+        assert(0 <= y && y < 9);
         return {board[x][y].type, board[x][y].is_red};
     }
 
@@ -463,7 +469,6 @@ namespace CChess {
     }
 
     void ChessBoard::GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const {
-        move->clear();
         switch (board[x][y].type) {
             case Ju:
                 JuRule(x, y, move);
@@ -571,7 +576,7 @@ namespace CChess {
         std::cout << std::endl;
     }
 
-    ChessBoard::ChessBoard():end(BoardResult::NOT_END),red_at_0(false) {
+    ChessBoard::ChessBoard() : end(BoardResult::NOT_END), red_at_0(false) {
 
     }
 
@@ -581,11 +586,6 @@ namespace CChess {
                       << ", EndX: " << move.end_x << ", EndY: " << move.end_y << std::endl;
         }
     }
-
-    void ChessBoard::BoardRed(bool is_red) {
-        red_at_0 = is_red;
-    }
-
 
     bool ChessBoard::IsLegal(std::string *errorMessage) const {
         int num_qizi[7][2] = {0}; //0:Ju  1:Ma  2:Shi  3:Pao 4:Xiang 5:Wang 6:Bing
@@ -643,7 +643,7 @@ namespace CChess {
             for (int j = 0; j < 9; j++) {
                 switch (board[i][j].type) {
                     case Wang:
-                        if (red_at_0) {
+                        if (!red_at_0) {
                             if (board[i][j].is_red) {
                                 if ((3 <= j && j < 6) && (6 < i)) {
                                     *errorMessage = "合法";
@@ -678,7 +678,7 @@ namespace CChess {
                         }
                         break;
                     case Bing:
-                        if (red_at_0) {
+                        if (!red_at_0) {
                             if (board[i][j].is_red) {
                                 if (i == 5 || i == 6) {
                                     if (j == 0 || j == 2 || j == 4 || j == 6 || j == 8) {
@@ -743,7 +743,7 @@ namespace CChess {
                     case Shi:
                         int position;
                         position = i + j;
-                        if (red_at_0) {
+                        if (!red_at_0) {
                             if (board[i][j].is_red) {
                                 if (position % 2 != 0) {
                                     *errorMessage = "士越界";
@@ -770,7 +770,7 @@ namespace CChess {
                         }
                         break;
                     case Xiang:
-                        if (red_at_0) {
+                        if (!red_at_0) {
                             if (!board[i][j].is_red) {
                                 if (j == 0 || j == 8 || j == 4) {
                                     if (i == 2)
@@ -980,6 +980,7 @@ namespace CChess {
         }
         return true; // 暂时return true ,将来会重构该函数
     }
+
     std::string ChessBoard::GetNumberName(int number, bool is_red) {
         std::string name1[9] = {"一", "二", "三", "四", "五", "六", "七", "八", "九"};
         std::string name2[9] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -989,7 +990,7 @@ namespace CChess {
             return name2[number];
     }
 
-    std::string ChessBoard::GetFileRank(const ChessMove& move, bool isRed, std::string &conversion) {
+    std::string ChessBoard::GetFileRank(const ChessMove &move, bool isRed, std::string &conversion) {
         bool Chong = false;
         for (int i = 0; i < 10; i++) {
             if (board[i][move.start_y].type == board[move.start_x][move.start_y].type &&
@@ -1006,39 +1007,35 @@ namespace CChess {
             }
         }
         if (!Chong) {
-            if (isRed)
-                conversion += GetNumberName(8 - move.start_y, isRed);
-            else
-                conversion += std::to_string(move.start_y + 1);
+            conversion += GetColNumber( move.start_y, isRed);
         }
         return conversion;
     }
 
-    std::string ChessBoard::Conversion1(const ChessMove& move, std::string conversion) {
+    std::string ChessBoard::Conversion1(const ChessMove &move, std::string conversion) {
         bool isRed = board[move.start_x][move.start_y].is_red;
         conversion = GetFileRank(move, isRed, conversion);
         if (move.start_x == move.end_x) {
             conversion += "平" + GetNumberName(8 - move.end_y, isRed);
-        } else if (move.start_x > move.end_x) {
-            conversion += (board_red == isRed) ? "进" : "退";
-            conversion += GetNumberName(move.start_x - move.end_x - 1, isRed);
-        } else if (move.start_x < move.end_x) {
-            conversion += (board_red == isRed) ? "退" : "进";
-            conversion += GetNumberName(move.end_x - move.start_x - 1, isRed);
+            return conversion;
+        } else if (red_at_0==isRed && move.end_x > move.start_x || red_at_0!=isRed && move.end_x < move.start_x) {
+            conversion += "进";
+        } else {
+            conversion += "退";
         }
+        conversion += GetNumberName(std::abs(move.start_x - move.end_x) - 1, isRed);
         return conversion;
     }
 
-    std::string ChessBoard::Conversion2(const ChessMove& move, std::string conversion) {
+    std::string ChessBoard::Conversion2(const ChessMove &move, std::string conversion) {
         bool isRed = board[move.start_x][move.start_y].is_red;
         conversion = GetFileRank(move, isRed, conversion);
-        if (move.start_x > move.end_x) {
-            conversion += (board_red == isRed) ? "进" : "退";
-            conversion += GetNumberName(move.start_x - move.end_x - 1, isRed);
-        } else if (move.start_x < move.end_x) {
-            conversion += (board_red == isRed) ? "退" : "进";
-            conversion += GetNumberName(move.end_x - move.start_x - 1, isRed);
+        if (red_at_0==isRed && move.end_x > move.start_x || red_at_0!=isRed && move.end_x < move.start_x) {
+            conversion += "进";
+        } else {
+            conversion += "退";
         }
+        conversion += GetColNumber(move.end_y,isRed);
         return conversion;
     }
 
@@ -1063,12 +1060,8 @@ namespace CChess {
         std::vector<ChessMove> moves;
         GetMoves(is_red, &moves);
         std::random_device rd;
-        //uint32_t seed = static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count());
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<std::size_t> dist(0, moves.size() - 1);
-        std::size_t index = dist(gen);
-        //move = moves[index];
-        return moves[index];
+        xorshift_state=rd();
+        return moves[Xorshift32()%moves.size()];
     }
 
     uint32_t ChessBoard::Xorshift32() {
@@ -1166,6 +1159,44 @@ namespace CChess {
             return chess1.is_red < chess2.is_red;
         } else {
             return false;
+        }
+    }
+
+    void ChessBoard::Reverse() {
+        ChessBoard temp = *this;
+        red_at_0 = !red_at_0;
+        ClearBoard();
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                auto chess=temp.GetChessAt(9 - i, 8 - j);
+                if(!chess.IsEmpty()){
+                    SetChessAt(chess, i, j);
+                }
+
+            }
+        }
+    }
+
+    ChessBoard::ChessBoard(bool red_at_0):red_at_0(red_at_0),end(BoardResult::NOT_END) {
+
+    }
+
+    std::string ChessBoard::GetColNumber(int col, bool is_red) {
+        if(red_at_0){
+            if(is_red){
+                return GetNumberName(col,is_red);
+            }
+            else{
+                return GetNumberName(8-col,is_red);
+            }
+        }
+        else{
+            if(is_red){
+                return GetNumberName(8-col,is_red);
+            }
+            else{
+                return GetNumberName(col,is_red);
+            }
         }
     }
 
