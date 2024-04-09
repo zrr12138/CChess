@@ -18,6 +18,7 @@
 #include <fstream>
 #include <algorithm>
 #include <unistd.h>
+#include "common/defer.h"
 #include "common/spinlock.h"
 
 #define THROTTLE_CALL(delay) \
@@ -31,19 +32,24 @@
     } while(0)
 namespace CChess {
     MCTSEngine::MCTSEngine(int thread_num, double explore_c) : C(explore_c), thread_num_(thread_num), stop_(true),
-                                                               actioning(false) {
+                                                               actioning(false), threadPool(nullptr) {
 
     }
 
     bool MCTSEngine::StartSearch(const ChessBoard &state, bool red_first) {
+        if (!stop_) {
+            return false;
+        }
         LOG(INFO) << __func__ << "thread_num_: " << thread_num_;
         stop_.store(false);
         LOG(INFO) << __func__ << " board: " << state.ToString() << " red_first: " << red_first;
         //初始化根节点x
         root_node_ = new Node(red_first, this);
         root_board_ = state;
-        threadPool.Init(thread_num_, std::bind(&MCTSEngine::LoopExpandTree, this));
-        threadPool.Start();
+        assert(threadPool == nullptr);
+        threadPool = new common::ThreadPool();
+        threadPool->Init(thread_num_, std::bind(&MCTSEngine::LoopExpandTree, this));
+        threadPool->Start();
         pause_cnt_ = 0;
         return true;
     }
@@ -66,9 +72,14 @@ namespace CChess {
     bool MCTSEngine::Stop() {
         stop_.store(true);
         auto start = common::TimeUtility::GetTimeofDayMs();
-        threadPool.Stop();
-        LOG(INFO) << "thread pool stop in "
-                  << common::TimeUtility::GetTimeofDayMs() - start << " ms";
+        if (threadPool != nullptr) {
+            threadPool->Stop();
+        }
+        LOG(WARNING) << "thread pool stop in "
+                     << common::TimeUtility::GetTimeofDayMs() - start << " ms";
+        FreeTree(root_node_);
+        delete threadPool;
+        threadPool = nullptr;
         return true;
     }
 
@@ -107,7 +118,10 @@ namespace CChess {
         pause_cnt_ = 0;
         actioning = false;
         actioning.store(false);
-        return false;
+        if (root_board_.End() != BoardResult::NOT_END) {
+            Stop();
+        }
+        return true;
     }
 
     ChessMove MCTSEngine::GetResult() {
@@ -154,19 +168,33 @@ namespace CChess {
     }
 
     void MCTSEngine::getBestNode(Node *node, std::vector<std::pair<ChessMove, double>> *best_path) {
-        bool is_red = node->is_red;
-        if (node == nullptr || node->move_node_ == nullptr) {
+        if (node == nullptr) {
             return;
         }
+        {
+            node->initLock.Lock();
+            defer({
+                      node->initLock.UnLock();
+                  });
+            if (node->move_node_ == nullptr) {
+                return;
+            }
+        }
+
+        bool is_red = node->is_red;
+        bool have_nullptr = false;
         auto move_node = std::max_element(node->move_node_, node->move_node_ + node->move_node_size_,
-                                          [is_red](const std::pair<ChessMove, Node *> &x,
-                                                   const std::pair<ChessMove, Node *> &y) -> bool {
-                                              if (x.second == nullptr) {
+                                          [&](const std::pair<ChessMove, Node *> &x,
+                                              const std::pair<ChessMove, Node *> &y) -> bool {
+                                              if (x.second == nullptr || y.second == nullptr) {
+                                                  have_nullptr = true;
                                                   return true;
                                               }
                                               return x.second->GetWinRate(is_red) < y.second->GetWinRate(is_red);
                                           });
-
+        if (have_nullptr) {
+            return;
+        }
         best_path->emplace_back(move_node->first, move_node->second->GetWinRate(is_red));
         getBestNode(move_node->second, best_path);
     }
@@ -184,6 +212,7 @@ namespace CChess {
             FreeTree(node->move_node_[i].second);
         }
         free(node);
+        node = nullptr;
     }
 
     BoardResult MCTSEngine::Simulation(const ChessBoard &board, bool is_red) {
@@ -191,6 +220,20 @@ namespace CChess {
         ctx.board = board;
         Node node(is_red, this);
         return node.Simulation(&ctx);
+    }
+
+    bool MCTSEngine::IsRunning() {
+        return !stop_;
+    }
+
+    const ChessBoard &MCTSEngine::GetChessBoard() const {
+        return root_board_;
+
+    }
+
+    MCTSEngine::~MCTSEngine() {
+        Stop();
+
     }
 
 

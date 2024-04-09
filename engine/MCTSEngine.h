@@ -51,6 +51,8 @@ namespace CChess {
     public:
         explicit MCTSEngine(int thread_num, double explore_c = std::sqrt(2));
 
+        ~MCTSEngine();
+
         bool StartSearch(const ChessBoard &state, bool red_first);
 
         bool Action(ChessMove move);
@@ -69,11 +71,15 @@ namespace CChess {
 
         void FreeTree(Node *node);
 
+        bool IsRunning();
+
+        const ChessBoard& GetChessBoard() const;
+
     private:
         const double C;
         std::atomic<bool> stop_,actioning;
         std::atomic<int> pause_cnt_;
-        common::ThreadPool threadPool;
+        common::ThreadPool *threadPool;
         Node* root_node_;
         ChessBoard root_board_;
 
