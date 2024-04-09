@@ -91,15 +91,15 @@ namespace CChess {
 
         void BingRule(int row, int col, std::vector<ChessMove> *moves) const;
 
-        std::string Conversion1(const ChessMove &move, std::string conversion);
+        std::string Conversion1(const ChessMove &move, std::string conversion) const;
 
-        std::string Conversion2(const ChessMove &move, std::string conversion);
+        std::string Conversion2(const ChessMove &move, std::string conversion) const;
 
-        std::string GetNumberName(int number, bool is_red);
+        std::string GetNumberName(int number, bool is_red) const;
 
-        std::string GetFileRank(const ChessMove &move, bool isRed, std::string &Con);
+        std::string GetFileRank(const ChessMove &move, bool isRed, std::string &conversion) const;
 
-        std::string GetColNumber(int col,bool is_red);
+        std::string GetColNumber(int col,bool is_red) const;
 
         uint32_t Xorshift32();
 
@@ -117,7 +117,7 @@ namespace CChess {
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
-        Chess GetChessAt(int x, int y) const;
+        const Chess & GetChessAt(int x, int y) const;
 
         bool Move(const ChessMove &move);
 
@@ -129,7 +129,7 @@ namespace CChess {
 
         void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
-        bool MoveConversion (const ChessMove &move, std::string *Con);
+        bool MoveConversion (const ChessMove &move, std::string *QiPu) const;
 
         void ParseFromString(const std::string &str); //json字符串
 
@@ -150,6 +150,10 @@ namespace CChess {
         void GetDeadChess (std::vector<Chess> *dead);
 
         void Reverse();
+
+        struct Hash {
+            std::size_t operator()(const ChessBoard& chessBoard) const;
+        };
 
     };
 }

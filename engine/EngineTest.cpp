@@ -57,13 +57,45 @@ void test2(int thread_num) {
     }
     engine.Stop();
 }
+void test3(){
+    ChessBoard board;
+    MCTSEngine engine(1);
+    board.initBoard();
+    engine.StartSearch(board,true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    engine.Stop();
+    engine.StartSearch(board,true);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    engine.Stop();
 
+}
+void test4(){
+    MCTSEngine engine(8);
+    {
+        ChessBoard board;
+        board.initBoard();
+        engine.StartSearch(board, true);
+    }
+    std::vector<std::pair<ChessMove, double>> path;
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    engine.GetBestPath(&path);
+    for(auto &it:path){
+        std::string move_str;
+        assert(engine.GetChessBoard().MoveConversion(it.first,&move_str));
+        std::cout<<move_str<<"("<<it.second<<")"<<"-->";
+    }
+    std::cout<<std::endl;
+    engine.Stop();
+
+}
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging("ManualTest");
     FLAGS_log_dir = ".";
     FLAGS_v = 2;
 
-    test1();
-    test2(1);
+    //test1();
+    //test2(1);
+    //test3();
+    test4();
 }
