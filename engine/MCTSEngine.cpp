@@ -44,6 +44,7 @@ namespace CChess {
         root_board_ = state;
         threadPool.Init(thread_num_, std::bind(&MCTSEngine::LoopExpandTree, this));
         threadPool.Start();
+        pause_cnt_ = 0;
         return true;
     }
 
@@ -52,6 +53,7 @@ namespace CChess {
         while (!stop_.load()) {
             if (actioning.load()) {
                 pause_cnt_++;
+                LOG(INFO) << __func__ << "wait action pause cnt:" << pause_cnt_ << " thread num:" << thread_num_;
                 while (actioning.load());
             }
             SearchCtx ctx;
@@ -75,7 +77,7 @@ namespace CChess {
 
         assert(root_node_->move_node_ != nullptr);
         assert(root_node_->move_node_size_ > 0);
-        assert(root_board_.End() != BoardResult::NOT_END);
+        assert(root_board_.End() == BoardResult::NOT_END);
 
         Node *new_root = nullptr;
         for (int i = 0; i < root_node_->move_node_size_; i++) {
@@ -87,7 +89,7 @@ namespace CChess {
         if (new_root == nullptr) {
             return false;
         }
-        LOG(INFO) << __func__ << " move: " << move;
+        LOG(WARNING) << __func__ << " move: " << move;
         actioning.store(true);
         while (pause_cnt_ != thread_num_);
         // free node
@@ -98,11 +100,12 @@ namespace CChess {
                 FreeTree(root_node_->move_node_[i].second);
             }
         }
-        LOG(INFO) << "free node in " << common::TimeUtility::GetTimeofDayMs() - start << " ms";
+        LOG(WARNING) << "free node in " << common::TimeUtility::GetTimeofDayMs() - start << " ms";
         free(root_node_);
         root_node_ = new_root;
         assert(root_board_.Move(move));
         pause_cnt_ = 0;
+        actioning = false;
         actioning.store(false);
         return false;
     }
@@ -212,6 +215,7 @@ namespace CChess {
             return ctx->board.End();
         }
         int64_t index = access_cnt.fetch_add(1);
+        LOG(INFO) << __func__ << " node: " << this << " access index:" << index;
         if (!inited) {
             Init(ctx->board);
         }
@@ -220,6 +224,8 @@ namespace CChess {
             do {
                 move_node = GetBestMove();
             } while (move_node == nullptr);
+            LOG(INFO) << " node: " << this << " get best move:" << move_node->first << " next node "
+                      << move_node->second;
             auto &move = move_node->first;
             auto &node = move_node->second;
             ctx->board.Move(move);
@@ -230,7 +236,11 @@ namespace CChess {
             assert(move_node_[index].second == nullptr);
             move_node_[index].second = new Node(!is_red, engine_);
             ctx->board.Move(move_node_[index].first);
+            LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second << " with "
+                      << move_node_[index].first << " start simulation";
             auto res = move_node_[index].second->Simulation(ctx);
+            LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second
+                      << " simulation end with " << getBoardResultStr(res);
             UpdateValue(res);
             return res;
         }
@@ -240,7 +250,7 @@ namespace CChess {
         auto &board = ctx->board;
         int move_count_limit = 100;
         int move_count = 0;
-        bool  is_red_now = is_red;
+        bool is_red_now = is_red;
         while (board.End() == BoardResult::NOT_END && move_count++ < move_count_limit) {
             assert(board.Move(board.RandMove2(is_red_now)));
             is_red_now = !is_red_now;
@@ -291,6 +301,7 @@ namespace CChess {
             move_node_[i].second = nullptr;
         }
         inited = true;
+        LOG(INFO) << __func__ << " node: " << this << "  init finish" << " move size:" << moves.size();
         initLock.UnLock();
     }
 

@@ -24,13 +24,12 @@ void test1() {
     MCTSEngine engine(1);
 
     auto start = common::TimeUtility::CLockRealTimeMs();
-    int n = 100000;
-    BoardResult end;
+    int n = 1000;
     int black = 0;
     int red = 0;
     int He = 0;
     for (int i = 0; i < n; i++) {
-        engine.Simulation(board, true, &end);
+        auto end = engine.Simulation(board, true);
         if (end == BoardResult::RED_WIN)
             red++;
         else if (end == BoardResult::BLACK_WIN)
@@ -47,14 +46,16 @@ void test2(int thread_num) {
     board.initBoard();
     MCTSEngine engine(thread_num);
     engine.StartSearch(board, true);
-    while (board.End() != BoardResult::NOT_END) {
+    while (board.End() == BoardResult::NOT_END) {
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
         auto move = engine.GetResult();
         std::string move_string;
         assert(board.MoveConversion(move, &move_string));
-        std::cout << "move:" << move_string << std::endl;
+        std::cout << "move:" << move << " " << move_string << std::endl;
+        engine.Action(move);
         assert(board.Move(move));
     }
+    engine.Stop();
 }
 
 int main(int argc, char *argv[]) {
@@ -64,5 +65,5 @@ int main(int argc, char *argv[]) {
     FLAGS_v = 2;
 
     test1();
-    test2();
+    test2(1);
 }
