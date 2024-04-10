@@ -71,6 +71,8 @@ namespace CChess {
 
         bool IsRunning();
 
+        const ChessBoard& GetChessBoard() const;
+
     private:
         const double C;
         std::atomic<bool> stop_,actioning;

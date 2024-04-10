@@ -67,14 +67,16 @@ int main(int argc, char *argv[]) {
     });
 
     CROW_ROUTE(app, "/engine_action")([&](const crow::request &req) {
+        if(!engine.IsRunning()){
+            return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
+        }
+        assert(engine.Action(engine.GetResult()));
+        return crow::json::wvalue({{"error", OK}});
+    });
 
-        engine
-        {
-            return crow::json::wvalue({{"error", OK}});
-        }
-        else{
-            return crow::json::wvalue({{"error", START_SEARCH_FAILED}});
-        }
+    CROW_ROUTE(app, "/engine_stop")([&](const crow::request &req) {
+        assert(engine.Stop());
+        return crow::json::wvalue({{"error", OK}});
     });
 
     //board api

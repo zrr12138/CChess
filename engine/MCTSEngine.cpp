@@ -69,6 +69,7 @@ namespace CChess {
         threadPool.Stop();
         LOG(INFO) << "thread pool stop in "
                   << common::TimeUtility::GetTimeofDayMs() - start << " ms";
+        FreeTree(root_node_);
         return true;
     }
 
@@ -107,7 +108,10 @@ namespace CChess {
         pause_cnt_ = 0;
         actioning = false;
         actioning.store(false);
-        return false;
+        if(root_board_.End()!=BoardResult::NOT_END){
+            Stop();
+        }
+        return true;
     }
 
     ChessMove MCTSEngine::GetResult() {
@@ -195,6 +199,11 @@ namespace CChess {
 
     bool MCTSEngine::IsRunning() {
         return !stop_;
+    }
+
+    const ChessBoard &MCTSEngine::GetChessBoard() const{
+        return root_board_;
+
     }
 
 
