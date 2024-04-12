@@ -36,6 +36,9 @@ namespace CChess {
     }
 
     bool MCTSEngine::StartSearch(const ChessBoard &state, bool red_first) {
+        if(!stop_){
+            return false;
+        }
         LOG(INFO) << __func__ << "thread_num_: " << thread_num_;
         stop_.store(false);
         LOG(INFO) << __func__ << " board: " << state.ToString() << " red_first: " << red_first;

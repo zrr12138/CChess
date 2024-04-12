@@ -51,26 +51,26 @@ int main(int argc, char *argv[]) {
         if (!req_json) {
             return crow::json::wvalue({{"error", BAD_ARGUMENT}});
         }
-        if (!req_json.has("board")||!req_json.has("red_first")) {
+        if (!req_json.has("board") || !req_json.has("red_first")) {
             return crow::json::wvalue({{"error", ARGUMENT_NOT_ENOUGH}});
         }
-        bool red_first=req_json["red_first"].b();
+        bool red_first = req_json["red_first"].b();
         ChessBoard board;
         board.ParseFromString(req_json["board"].s());
-        if(engine.StartSearch(board,red_first))
-        {
+        if (engine.StartSearch(board, red_first)) {
             return crow::json::wvalue({{"error", OK}});
-        }
-        else{
+        } else {
             return crow::json::wvalue({{"error", START_SEARCH_FAILED}});
         }
     });
 
     CROW_ROUTE(app, "/engine_action")([&](const crow::request &req) {
-        if(!engine.IsRunning()){
+        if (!engine.IsRunning()) {
             return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
         }
-        assert(engine.Action(engine.GetResult()));
+        auto move = engine.GetResult();
+        assert(engine.Action(move));
+        assert(board.Move(move));
         return crow::json::wvalue({{"error", OK}});
     });
 
@@ -100,9 +100,20 @@ int main(int argc, char *argv[]) {
         move.ParseFromString(req_json["move"].s());
         ChessBoard board;
         board.ParseFromString(req_json["board"].s());
-        if (board.Move(move)) {
-            return crow::json::wvalue({{"error", OK},
-                                {"board", crow::json::load(board.ToString())}});
+
+        if(engine.IsRunning()){
+            if(engine.Action(move))
+            {
+                assert(board.Move(move));
+                return crow::json::wvalue({{"error", OK},
+                                           {"board", crow::json::load(board.ToString())}});
+            }
+        }
+        else{
+            if(board.Move(move)){
+                return crow::json::wvalue({{"error", OK},
+                                           {"board", crow::json::load(board.ToString())}});
+            }
         }
         return crow::json::wvalue({{"error", MOVE_FAILED}});
     });
