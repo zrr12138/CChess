@@ -5,6 +5,7 @@ from chess_board import *
 from context import *
 import pygame_gui
 from client import Client
+import time
 
 # pygame setup
 pygame.init()
@@ -45,18 +46,24 @@ def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
 def handle_key_down(ctx, event):
     if ctx.status == Status.SEARCHING:
         if event.key == pygame.K_d:
-            pass
+            client.engine_stop()
+            ctx.status = Status.PAUSE
         elif event.key == pygame.K_m:
-            pass
+            ctx.board = client.engine_action(ctx.board)
     elif ctx.status == Status.PAUSE:
         if event.key == pygame.K_s:
-            pass
+            if pygame.key.get_mods() & pygame.KMOD_CTRL:
+                client.start_search(ctx.board, False)
+            else:
+                client.start_search(ctx.board, True)
+            ctx.status = Status.SEARCHING
+            ctx.think_text = ""
         elif event.key == pygame.K_r:
-            pass
+            ctx.board = client.reverse_board(ctx.board)
         elif event.key == pygame.K_p:
             ctx.status = Status.PLACE
         elif event.key == pygame.K_i:
-            pass
+            ctx.board = client.get_init_board()
     elif ctx.status == Status.PLACE:
         chess_type = None
         if event.key == pygame.K_w:
@@ -93,7 +100,21 @@ def handle_event(ctx: Context, event: pygame.event.Event):
     if event.type == pygame.KEYDOWN:
         handle_key_down(ctx, event)
     if event.type == pygame.QUIT:
+        client.engine_stop()
         ctx.running = False
+
+
+last_refresh_think_text_time = 0
+
+
+def refresh_think_text(ctx: Context):
+    global last_refresh_think_text_time
+    current_time = time.time()
+    time_since_last_call = current_time - last_refresh_think_text_time
+    if time_since_last_call < 5:
+        return
+    last_refresh_think_text_time = current_time
+    ctx.think_text = client.best_path() + "\n" + ctx.think_text
 
 
 chess_board = ctx.board.image
@@ -123,6 +144,8 @@ while ctx.running:
         ctx.board.highlight(screen, ctx.choose_pos[0], ctx.choose_pos[1], (255, 0, 0))
     think_text_box.set_text(ctx.think_text)
     help_text_box.set_text(ctx.help_text)
+    if ctx.status == Status.SEARCHING:
+        refresh_think_text(ctx)
     gui_manager.draw_ui(screen)
     pygame.display.flip()
     pygame.display.update()
