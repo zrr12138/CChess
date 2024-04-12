@@ -351,7 +351,15 @@ void test12() {
     score = board.EvaluatePosition();
     std::cout << score << std::endl;
 }
+void test13(){
+    std::string temp=R"([{"col":2,"is_red":false,"row":0,"type":6},{"col":5,"is_red":false,"row":0,"type":3},{"col":3,"is_red":false,"row":2,"type":0},{"col":5,"is_red":false,"row":2,"type":3},{"col":1,"is_red":false,"row":7,"type":2},{"col":3,"is_red":true,"row":8,"type":0},{"col":5,"is_red":false,"row":8,"type":2},{"col":8,"is_red":false,"row":9,"type":2}])";
+    ChessBoard board;
+    board.ParseFromString(temp);
+    std::vector<ChessMove> moves;
+    board.GetMoves(true,&moves);
+    assert(!moves.empty());
 
+}
 int main(int argc, char *argv[]) {
     test1();
     test2();
@@ -364,4 +372,5 @@ int main(int argc, char *argv[]) {
     test10();
     test11();
     test12();
+    test13();
 }

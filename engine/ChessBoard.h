@@ -117,7 +117,7 @@ namespace CChess {
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
-        Chess GetChessAt(int x, int y) const;
+        const Chess & GetChessAt(int x, int y) const;
 
         bool Move(const ChessMove &move);
 
@@ -150,6 +150,10 @@ namespace CChess {
         void GetDeadChess (std::vector<Chess> *dead);
 
         void Reverse();
+
+        struct Hash {
+            std::size_t operator()(const ChessBoard& chessBoard) const;
+        };
 
     };
 }

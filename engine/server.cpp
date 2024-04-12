@@ -11,14 +11,14 @@
 
 using namespace CChess;
 
-DEFINE_int32(thread_num, 8, "");
+DEFINE_int32(thread_num, 1, "");
 
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging("CChess_server");
     FLAGS_log_dir = ".";
-    FLAGS_v = 2;
-    ChessBoard board;
+    FLAGS_minloglevel = 1;
+    FLAGS_logtostdout= true;
     MCTSEngine engine(FLAGS_thread_num);
     crow::SimpleApp app;
 
@@ -64,14 +64,31 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    CROW_ROUTE(app, "/engine_action")([&](const crow::request &req) {
+    CROW_ROUTE(app, "/engine_action").methods(crow::HTTPMethod::Post)([&](const crow::request &req) {
+        auto req_json = crow::json::load(req.body);
+        LOG(INFO) << "/engine_action " << req.body;
+        if (!req_json) {
+            return crow::json::wvalue({{"error", BAD_ARGUMENT}});
+        }
+        if (!req_json.has("board")) {
+            return crow::json::wvalue({{"error", ARGUMENT_NOT_ENOUGH}});
+        }
+        ChessBoard board;
+        board.ParseFromString(req_json["board"].s());
         if (!engine.IsRunning()) {
             return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
         }
+        ChessBoard::Hash hash;
+        LOG(WARNING)<<(engine.GetChessBoard().ToString()==board.ToString());
+        LOG(WARNING)<<hash(engine.GetChessBoard())<<" "<<hash(board);
+        LOG(WARNING)<<hash(engine.GetChessBoard());
+        if(hash(engine.GetChessBoard())!=hash(board)){
+            return crow::json::wvalue({{"error", BOARD_INCORRECT}});
+        }
         auto move = engine.GetResult();
         assert(engine.Action(move));
-        assert(board.Move(move));
-        return crow::json::wvalue({{"error", OK}});
+        return crow::json::wvalue({
+            {"error", OK},{"board", crow::json::load(engine.GetChessBoard().ToString())}});
     });
 
     CROW_ROUTE(app, "/engine_stop")([&](const crow::request &req) {
@@ -100,13 +117,17 @@ int main(int argc, char *argv[]) {
         move.ParseFromString(req_json["move"].s());
         ChessBoard board;
         board.ParseFromString(req_json["board"].s());
-
+        LOG(WARNING)<<engine.GetChessBoard().ToString();
+        LOG(WARNING)<<board.ToString();
         if(engine.IsRunning()){
+            ChessBoard::Hash hash;
+            if(hash(engine.GetChessBoard())!=hash(board)){
+                return crow::json::wvalue({{"error", BOARD_INCORRECT}});
+            }
             if(engine.Action(move))
             {
-                assert(board.Move(move));
                 return crow::json::wvalue({{"error", OK},
-                                           {"board", crow::json::load(board.ToString())}});
+                                           {"board", crow::json::load(engine.GetChessBoard().ToString())}});
             }
         }
         else{

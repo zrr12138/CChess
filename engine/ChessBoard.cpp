@@ -345,10 +345,10 @@ namespace CChess {
         }
     }
 
-    Chess ChessBoard::GetChessAt(int x, int y) const {
+    const Chess &ChessBoard::GetChessAt(int x, int y) const {
         assert(0 <= x && x < 10);
         assert(0 <= y && y < 9);
-        return {board[x][y].type, board[x][y].is_red};
+        return board[x][y];
     }
 
     bool ChessBoard::Move(const ChessMove &move) {
@@ -1007,7 +1007,7 @@ namespace CChess {
             }
         }
         if (!Chong) {
-            conversion += GetColNumber( move.start_y, isRed);
+            conversion += GetColNumber(move.start_y, isRed);
         }
         return conversion;
     }
@@ -1018,7 +1018,7 @@ namespace CChess {
         if (move.start_x == move.end_x) {
             conversion += "平" + GetNumberName(8 - move.end_y, isRed);
             return conversion;
-        } else if (red_at_0==isRed && move.end_x > move.start_x || red_at_0!=isRed && move.end_x < move.start_x) {
+        } else if (red_at_0 == isRed && move.end_x > move.start_x || red_at_0 != isRed && move.end_x < move.start_x) {
             conversion += "进";
         } else {
             conversion += "退";
@@ -1030,12 +1030,12 @@ namespace CChess {
     std::string ChessBoard::Conversion2(const ChessMove &move, std::string conversion) {
         bool isRed = board[move.start_x][move.start_y].is_red;
         conversion = GetFileRank(move, isRed, conversion);
-        if (red_at_0==isRed && move.end_x > move.start_x || red_at_0!=isRed && move.end_x < move.start_x) {
+        if (red_at_0 == isRed && move.end_x > move.start_x || red_at_0 != isRed && move.end_x < move.start_x) {
             conversion += "进";
         } else {
             conversion += "退";
         }
-        conversion += GetColNumber(move.end_y,isRed);
+        conversion += GetColNumber(move.end_y, isRed);
         return conversion;
     }
 
@@ -1060,8 +1060,8 @@ namespace CChess {
         std::vector<ChessMove> moves;
         GetMoves(is_red, &moves);
         std::random_device rd;
-        xorshift_state=rd();
-        return moves[Xorshift32()%moves.size()];
+        xorshift_state = rd();
+        return moves[Xorshift32() % moves.size()];
     }
 
     uint32_t ChessBoard::Xorshift32() {
@@ -1168,8 +1168,8 @@ namespace CChess {
         ClearBoard();
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
-                auto chess=temp.GetChessAt(9 - i, 8 - j);
-                if(!chess.IsEmpty()){
+                auto chess = temp.GetChessAt(9 - i, 8 - j);
+                if (!chess.IsEmpty()) {
                     SetChessAt(chess, i, j);
                 }
 
@@ -1177,25 +1177,22 @@ namespace CChess {
         }
     }
 
-    ChessBoard::ChessBoard(bool red_at_0):red_at_0(red_at_0),end(BoardResult::NOT_END) {
+    ChessBoard::ChessBoard(bool red_at_0) : red_at_0(red_at_0), end(BoardResult::NOT_END) {
 
     }
 
     std::string ChessBoard::GetColNumber(int col, bool is_red) {
-        if(red_at_0){
-            if(is_red){
-                return GetNumberName(col,is_red);
+        if (red_at_0) {
+            if (is_red) {
+                return GetNumberName(col, is_red);
+            } else {
+                return GetNumberName(8 - col, is_red);
             }
-            else{
-                return GetNumberName(8-col,is_red);
-            }
-        }
-        else{
-            if(is_red){
-                return GetNumberName(8-col,is_red);
-            }
-            else{
-                return GetNumberName(col,is_red);
+        } else {
+            if (is_red) {
+                return GetNumberName(8 - col, is_red);
+            } else {
+                return GetNumberName(col, is_red);
             }
         }
     }
@@ -1269,4 +1266,18 @@ namespace CChess {
         end_y = jsonMove["end_y"];
     }
 
+    std::size_t ChessBoard::Hash::operator()(const ChessBoard &chessBoard) const {
+        size_t res = 0;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                size_t temp = 0;
+                auto &chess = chessBoard.GetChessAt(i, j);
+                if (!chess.IsEmpty()) {
+                    temp = chess.is_red ? 19 : 71 + chess.type;
+                }
+                res = res * 131 + temp;
+            }
+        }
+        return res;
+    }
 }
