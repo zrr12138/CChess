@@ -337,7 +337,7 @@ void test11() {
     board.SetChessAt(Chess(ChessType::Shi, true), 7, 3);
     std::vector<ChessMove> moves;
     board.GetMovesFrom(8, 3, &moves);
-    assert(moves.size() == 1);
+    assert(moves.size() == 2);
 }
 
 
@@ -367,6 +367,23 @@ void test14(){
     board1.ParseFromString(board.ToString());
     assert(board.Move(ChessMove(6,4,5,4)));
     assert(board1.Move(ChessMove(6,4,5,4)));
+
+}
+
+void test15(){
+    ChessBoard board;
+    board.ClearBoard();
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 4);
+    std::vector<ChessMove> moves;
+    board.GetMovesFrom(9, 4,&moves);
+    assert(std::find(moves.begin(), moves.end(), ChessMove(9, 4, 0, 4)) != moves.end());
+    assert(moves.size() == 4);
+    board.SetChessAt(Chess(ChessType::Pao, true), 4, 4);
+    moves.clear();
+    board.GetMoves(false, &moves);
+    assert(moves.size() == 3);
+
 }
 int main(int argc, char *argv[]) {
     test1();
@@ -380,6 +397,7 @@ int main(int argc, char *argv[]) {
     test10();
     test11();
     test12();
-    //test13();
+    test13();
     test14();
+    test15();
 }
