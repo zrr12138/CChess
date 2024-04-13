@@ -33,3 +33,5 @@
 cmake-build-debug
 cchess_gui/*.log
 engine/build
+cchess_gui/CChess
+cchess_gui/binary
