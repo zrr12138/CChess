@@ -55,8 +55,10 @@ run_shell_print("git clone git@github.com:zrr12138/CChess.git")
 shutil.rmtree("binary", ignore_errors=True)
 os.mkdir("binary")
 with open("engine_list", "r") as f:
-    git_version = f.readline().split()
-    run_shell_print(f"cd CChess && git checkout {git_version}")
-    run_shell_print("cd CChess/engine && bash build.sh")
-    run_shell_print(f"cp CChess/engine/build/server binary/{git_version}")
-
+    for line in f.readlines():
+        git_version = line.strip()
+        if len(git_version) == 0:
+            continue
+        run_shell_print(f"cd CChess && git checkout {git_version}")
+        run_shell_print("cd CChess/engine && bash build.sh")
+        run_shell_print(f"cp CChess/engine/build/server binary/{git_version}")
