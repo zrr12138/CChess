@@ -12,7 +12,7 @@
 using namespace CChess;
 
 DEFINE_int32(thread_num, 1, "");
-
+DEFINE_int32(port, 12138, "");
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging("CChess_server");
@@ -108,7 +108,10 @@ int main(int argc, char *argv[]) {
         assert(engine.Action(move));
         return crow::json::wvalue({
                                           {"error", OK},
-                                          {"board", crow::json::load(engine.GetChessBoard().ToString())}});
+                                          {"board", crow::json::load(engine.GetChessBoard().ToString())},
+                                          {"move",crow::json::load(move.ToString())}
+
+        });
     });
 
     CROW_ROUTE(app, "/engine_stop")([&](const crow::request &req) {
@@ -176,6 +179,23 @@ int main(int argc, char *argv[]) {
         }
         return crow::json::wvalue({{"error", MOVE_FAILED}});
     });
-    app.concurrency(1).port(12138).run();
+
+    CROW_ROUTE(app, "/board_end").methods(crow::HTTPMethod::Post)([&](const crow::request &req) {
+        auto req_json = crow::json::load(req.body);
+        LOG(INFO) << "/board_end " << req.body;
+        if (!req_json) {
+            return crow::json::wvalue({{"error", BAD_ARGUMENT}});
+        }
+        if (!req_json.has("board")) {
+            return crow::json::wvalue({{"error", ARGUMENT_NOT_ENOUGH}});
+        }
+        ChessBoard board;
+        board.ParseFromString(req_json["board"].s());
+        return crow::json::wvalue({{"error", OK},
+                                   {"end", board.End()}});
+    });
+
+
+    app.concurrency(1).port(FLAGS_port).run();
 
 }
