@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include "common/defer.h"
 #include "common/spinlock.h"
+#include "common/defer.h"
 
 #define THROTTLE_CALL(delay) \
     do { \
@@ -32,7 +33,8 @@
     } while(0)
 namespace CChess {
     MCTSEngine::MCTSEngine(int thread_num, double explore_c) : C(explore_c), thread_num_(thread_num), stop_(true),
-                                                               actioning(false), threadPool(nullptr) {
+                                                               actioning(false), threadPool(nullptr),
+                                                               root_node_(nullptr) {
 
     }
 
@@ -78,6 +80,7 @@ namespace CChess {
         LOG(WARNING) << "thread pool stop in "
                      << common::TimeUtility::GetTimeofDayMs() - start << " ms";
         FreeTree(root_node_);
+        root_node_ = nullptr;
         delete threadPool;
         threadPool = nullptr;
         return true;
@@ -109,6 +112,7 @@ namespace CChess {
         for (int i = 0; i < root_node_->move_node_size_; i++) {
             if (root_node_->move_node_[i].first != move) {
                 FreeTree(root_node_->move_node_[i].second);
+                root_node_->move_node_[i].second = nullptr;
             }
         }
         LOG(WARNING) << "free node in " << common::TimeUtility::GetTimeofDayMs() - start << " ms";
@@ -203,16 +207,18 @@ namespace CChess {
         if (node == nullptr) {
             return;
         }
+        defer({
+                  delete node;
+                  node = nullptr;
+              });
         if (node->move_node_ == nullptr) {
             assert(node->move_node_size_ == 0);
-            free(node);
             return;
         }
         for (int i = 0; i < node->move_node_size_; i++) {
             FreeTree(node->move_node_[i].second);
+            node->move_node_[i].second = nullptr;
         }
-        free(node);
-        node = nullptr;
     }
 
     BoardResult MCTSEngine::Simulation(const ChessBoard &board, bool is_red) {
@@ -271,14 +277,14 @@ namespace CChess {
                       << move_node->second;
             auto &move = move_node->first;
             auto &node = move_node->second;
-            ctx->board.Move(move);
+            assert(ctx->board.Move(move));
             auto res = node->ExpandTree(ctx);
             UpdateValue(res);
             return res;
         } else {
             assert(move_node_[index].second == nullptr);
             move_node_[index].second = new Node(!is_red, engine_);
-            ctx->board.Move(move_node_[index].first);
+            assert(ctx->board.Move(move_node_[index].first));
             LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second << " with "
                       << move_node_[index].first << " start simulation";
             auto res = move_node_[index].second->Simulation(ctx);
