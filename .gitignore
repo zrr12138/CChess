@@ -32,3 +32,4 @@
 *.app
 cmake-build-debug
 cchess_gui/*.log
+engine/build
