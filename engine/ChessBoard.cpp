@@ -192,6 +192,27 @@ namespace CChess {
 
     void ChessBoard::WangRule(int row, int col, std::vector<ChessMove> *moves) const {
         // 四个可能的帅的移动位置
+        if (row < 3) {
+            for (int i = row + 1; i < 10; ++i) {
+                if (board[i][col].type != Wang && board[i][col].type != Empty) {
+                    break;
+                } else if (board[i][col].type == Empty) {
+                    continue;
+                } else if (board[i][col].type == Wang) {
+                    AddMoveIfValid(row, col, i, col, moves);
+                }
+            }
+        } else if (row > 6) {
+            for (int i = row - 1; i >= 0; i--) {
+                if (board[i][col].type != Wang && board[i][col].type != Empty) {
+                    break;
+                } else if (board[i][col].type == Empty) {
+                    continue;
+                } else if (board[i][col].type == Wang) {
+                    AddMoveIfValid(row, col, i, col, moves);
+                }
+            }
+        }
         int offsets[4][2] = {{-1, 0},
                              {0,  1},
                              {1,  0},
@@ -202,40 +223,16 @@ namespace CChess {
             if (3 <= end_y && end_y <= 5) {
                 if (end_x < 3 && end_x >= 0) {
                     if (board[end_x][end_y].IsEmpty()) {
-                        for (int j = row + 1; j < 10; j++) {
-                            if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
-                                AddMoveIfValid(row, col, end_x, end_y, moves);
-                                break;
-                            }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
                         }
-                    } else {
-                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            for (int j = row + 1; j < 10; j++) {
-                                if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
-                                    AddMoveIfValid(row, col, end_x, end_y, moves);
-                                    break;
-                                }
-                            }
-                        }
-                    }
                 } else if (end_x > 6 && end_x <= 9) {
                     if (board[end_x][end_y].IsEmpty()) {
-                        for (int j = row - 1; j >= 0; j--) {
-                            if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
-                                AddMoveIfValid(row, col, end_x, end_y, moves);
-                                break;
-                            }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
+                            AddMoveIfValid(row, col, end_x, end_y, moves);
                         }
-                    } else {
-                        if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            for (int j = row - 1; j >= 0; j--) {
-                                if (board[j][end_y].type != Wang && board[j][end_y].type != Empty) {
-                                    AddMoveIfValid(row, col, end_x, end_y, moves);
-                                    break;
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -246,9 +243,9 @@ namespace CChess {
         int ReGuohe[3][2] = {{-1, 0},
                              {0,  1},
                              {0,  -1}};
-        int BaGuohe[3][2] = {{0, -1},
+        int BaGuohe[3][2] = {{1,  0},
                              {0, 1},
-                             {1, 0}};
+                             {0, -1}};
         for (int i = 0; i < 3; i++) {
             int end_x;
             int end_y;
