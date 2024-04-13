@@ -5,6 +5,7 @@ class Status(IntEnum):
     SEARCHING = 1
     PAUSE = 2
     PLACE = 3
+    FINISH = 4
 
 
 def get_help_text(status: Status):
@@ -20,6 +21,7 @@ class Context:
         self.human_red = True
         self.place_red = True
         self.choose_pos = None
+
     @property
     def help_text(self):
         if self.status == Status.SEARCHING:
@@ -28,3 +30,5 @@ class Context:
             return "s-开始搜索(红先) ctrl+s-开始搜索(黑先) r-棋盘翻转 p-放置模式 i-初始化棋盘"
         elif self.status == Status.PLACE:
             return "w-王 m-马 b-兵 s-士 j-车 p-炮 x-象 tab切换红黑 右键删除棋子 d-结束放置"
+        elif self.status == Status.FINISH:
+            return "i-初始化棋盘"

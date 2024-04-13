@@ -52,10 +52,12 @@ class Client:
         err = res["error"]
         if err == 0:
             board.parse_from_string(json.dumps(res["board"]))
-            return board
+            move = Move(0, 0, 0, 0)
+            move.parse_from_string(json.dumps(res["move"]))
+            return board, move
         else:
             logger.error(f"engine_action failed, get error:{err}")
-            return board
+            return board, Move(0, 0, 0, 0)
 
     def engine_stop(self):
         url = f"http://{self.ip}:{self.port}/engine_stop"
@@ -80,6 +82,7 @@ class Client:
         else:
             logger.error(f"move failed, get error:{err}")
             assert False
+
     def best_path(self):
         url = f"http://{self.ip}:{self.port}/best_path"
         res = requests.get(url).json()
@@ -89,4 +92,16 @@ class Client:
             return res["best_path"]
         else:
             logger.error(f"get best_path failed, get error:{err}")
+            assert False
+
+    def board_end(self, board: ChessBoard):
+        url = f"http://{self.ip}:{self.port}/board_end"
+        data = json.dumps({"board": board.to_string()})
+        res = requests.post(url, data=data).json()
+        logger.debug(f"access {url} data= {data} get request {res}")
+        err = res["error"]
+        if err == 0:
+            return BoardResult(res["end"])
+        else:
+            logger.error(f"get board end failed, get error:{err}")
             assert False

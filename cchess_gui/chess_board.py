@@ -17,24 +17,6 @@ class ChessType(IntEnum):
     Xiang = 6
 
 
-class ChessMove:
-    def __init__(self, start_x, start_y, end_x, end_y):
-        self.start_x = start_x
-        self.start_y = start_y
-        self.end_x = end_x
-        self.end_y = end_y
-
-    def __eq__(self, rhs):
-        return isinstance(rhs, ChessMove) and \
-            self.start_x == rhs.start_x and \
-            self.start_y == rhs.start_y and \
-            self.end_x == rhs.end_x and \
-            self.end_y == rhs.end_y
-
-    def __ne__(self, rhs):
-        return not self.__eq__(rhs)
-
-
 class BoardResult(IntEnum):
     RED_WIN = 0
     BLACK_WIN = 1

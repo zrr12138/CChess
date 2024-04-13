@@ -40,6 +40,9 @@ def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
                     ctx.choose_pos = (x, y)
             else:
                 ctx.board = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
+                end = client.board_end(ctx.board)
+                if end != BoardResult.NOT_END:
+                    ctx.status = Status.FINISH
                 ctx.choose_pos = None
 
 
@@ -50,6 +53,10 @@ def handle_key_down(ctx, event):
             ctx.status = Status.PAUSE
         elif event.key == pygame.K_m:
             ctx.board = client.engine_action(ctx.board)
+            end = client.board_end(ctx.board)
+            if end != BoardResult.NOT_END:
+                ctx.status = Status.FINISH
+
     elif ctx.status == Status.PAUSE:
         if event.key == pygame.K_s:
             if pygame.key.get_mods() & pygame.KMOD_CTRL:
@@ -64,6 +71,10 @@ def handle_key_down(ctx, event):
             ctx.status = Status.PLACE
         elif event.key == pygame.K_i:
             ctx.board = client.get_init_board()
+    elif ctx.status == Status.FINISH:
+        if event.key == pygame.K_i:
+            ctx.board = client.get_init_board()
+            ctx.status = Status.PAUSE
     elif ctx.status == Status.PLACE:
         chess_type = None
         if event.key == pygame.K_w:
