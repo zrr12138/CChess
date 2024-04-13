@@ -17,24 +17,6 @@ class ChessType(IntEnum):
     Xiang = 6
 
 
-class ChessMove:
-    def __init__(self, start_x, start_y, end_x, end_y):
-        self.start_x = start_x
-        self.start_y = start_y
-        self.end_x = end_x
-        self.end_y = end_y
-
-    def __eq__(self, rhs):
-        return isinstance(rhs, ChessMove) and \
-            self.start_x == rhs.start_x and \
-            self.start_y == rhs.start_y and \
-            self.end_x == rhs.end_x and \
-            self.end_y == rhs.end_y
-
-    def __ne__(self, rhs):
-        return not self.__eq__(rhs)
-
-
 class BoardResult(IntEnum):
     RED_WIN = 0
     BLACK_WIN = 1
@@ -184,3 +166,31 @@ class Move:
         self.start_y = json_move["start_y"]
         self.end_x = json_move["end_x"]
         self.end_y = json_move["end_y"]
+
+class ChessRecord:
+    def __init__(self):
+        self.boards = []
+
+    def append_board(self, board):
+        self.boards.append(copy.deepcopy(board))
+
+    def get_total_boards(self):
+        return len(self.boards)
+
+    def get_board(self, index):
+        return copy.deepcopy(self.boards[index])
+
+    def to_json(self):
+        json_boards = []
+        for board in self.boards:
+            json_board = board.to_string()
+            json_boards.append(json_board)
+        return json.dumps(json_boards)
+
+    def from_json(self, json_string):
+        json_boards = json.loads(json_string)
+        self.boards = []
+        for json_board in json_boards:
+            board = ChessBoard()
+            board.parse_from_string(json_board)
+            self.boards.append(board)

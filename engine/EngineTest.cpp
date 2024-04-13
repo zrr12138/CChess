@@ -46,56 +46,71 @@ void test2(int thread_num) {
     board.initBoard();
     MCTSEngine engine(thread_num);
     engine.StartSearch(board, true);
+    int step = 50;
     while (board.End() == BoardResult::NOT_END) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         auto move = engine.GetResult();
         std::string move_string;
         assert(board.MoveConversion(move, &move_string));
         std::cout << "move:" << move << " " << move_string << std::endl;
         engine.Action(move);
         assert(board.Move(move));
+        if (step-- < 0) {
+            break;
+        }
     }
     engine.Stop();
 }
-void test3(){
+
+void test3() {
     ChessBoard board;
     MCTSEngine engine(1);
     board.initBoard();
-    engine.StartSearch(board,true);
+    engine.StartSearch(board, true);
     std::this_thread::sleep_for(std::chrono::seconds(2));
     engine.Stop();
-    engine.StartSearch(board,true);
+    engine.StartSearch(board, true);
     std::this_thread::sleep_for(std::chrono::seconds(2));
     engine.Stop();
 
 }
-void test4(){
+
+void test4() {
     MCTSEngine engine(8);
     {
         ChessBoard board;
-        board.initBoard();
+        board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+        board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+        board.SetChessAt(Chess(ChessType::Bing, true), 1, 3);
+        board.SetChessAt(Chess(ChessType::Bing, true), 1, 5);
+        board.SetChessAt(Chess(ChessType::Shi, false), 2, 3);
+        board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
+        board.SetChessAt(Chess(ChessType::Bing, true), 3, 4);
         engine.StartSearch(board, true);
     }
     std::vector<std::pair<ChessMove, double>> path;
     std::this_thread::sleep_for(std::chrono::seconds(10));
     engine.GetBestPath(&path);
-    for(auto &it:path){
+    auto board = engine.GetChessBoard();
+    for (auto &it: path) {
         std::string move_str;
-        assert(engine.GetChessBoard().MoveConversion(it.first,&move_str));
-        std::cout<<move_str<<"("<<it.second<<")"<<"-->";
+        assert(board.MoveConversion(it.first, &move_str));
+        assert(board.Move(it.first));
+        std::cout << move_str << "(" << it.second << ")" << "-->";
     }
-    std::cout<<std::endl;
+    std::cout << std::endl;
     engine.Stop();
 
 }
+
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-    google::InitGoogleLogging("ManualTest");
+    google::InitGoogleLogging(argv[0]);
     FLAGS_log_dir = ".";
-    FLAGS_v = 2;
+    FLAGS_minloglevel = 1;
 
-    //test1();
-    //test2(1);
-    //test3();
+    test1();
+    test2(8);
+    test3();
     test4();
 }
