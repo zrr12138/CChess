@@ -11,7 +11,7 @@
 
 using namespace CChess;
 
-DEFINE_int32(thread_num, 1, "");
+DEFINE_int32(thread_num, 8, "");
 DEFINE_int32(port, 12138, "");
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
