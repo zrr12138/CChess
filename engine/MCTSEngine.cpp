@@ -32,7 +32,7 @@
     } while(0)
 namespace CChess {
     MCTSEngine::MCTSEngine(int thread_num, double explore_c) : C(explore_c), thread_num_(thread_num), stop_(true),
-                                                               actioning(false), threadPool(nullptr) {
+                                                               actioning(false), threadPool(nullptr),root_node_(nullptr) {
 
     }
 
