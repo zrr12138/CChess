@@ -42,7 +42,7 @@ def run_shell_print(args, try_num: int = 1, retry_interval: int = 3, continue_on
 
 TEST_PATH = "/home/zrr/cchess_test"
 CCHESS_PATH = os.path.join(TEST_PATH, "CChess")
-BINARY_PATH=os.path.join(TEST_PATH,"binary")
+BINARY_PATH = os.path.join(TEST_PATH, "binary")
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 if not os.path.exists(TEST_PATH):
@@ -56,30 +56,36 @@ if not os.path.exists(CCHESS_PATH):
 else:
     run_shell_print("cd CChess && git fetch --all")
 
-
 if not os.path.exists(BINARY_PATH):
     os.mkdir(BINARY_PATH)
 
-binary_set = os.listdir(BINARY_PATH)
-run_shell_print(f"cp {script_dir}/engine_list {TEST_PATH}")
+binary_exist_set = os.listdir(BINARY_PATH)
+binary_set = []
+
+os.remove(os.path.join(TEST_PATH, "engine_list"))
+shutil.copy(os.path.join(script_dir, "engine_list"), TEST_PATH)
+if not os.path.exists(os.path.join(TEST_PATH, "image")):
+    run_shell_print("cp -r CChess/cchess_gui/image .")
+
 with open("engine_list", "r") as f:
     for line in f.readlines():
         git_version = line.strip()
         if len(git_version) == 0:
             continue
         name = git_version[0:10]
-        if name in binary_set:
+        binary_set.append(name)
+        if name in binary_exist_set:
             continue
         run_shell_print(f"cd CChess && git checkout {git_version}")
         run_shell_print("cd CChess/engine && bash build.sh")
         run_shell_print(f"cp CChess/engine/build/server {BINARY_PATH}/{name}")
-        binary_set.append(name)
 
 print("binary generate finish!")
 print(binary_set)
 
 
 def engine_fight(contest):
+    record = ChessRecord()
     assert isinstance(contest, Contest)
     board = ChessBoard()
 
@@ -90,6 +96,7 @@ def engine_fight(contest):
 
     red_turn = True
     turn_cnt = 0
+    record.append_board(board)
     while red_client.board_end(board) == BoardResult.NOT_END:
         turn_cnt += 1
         if turn_cnt > 400:
@@ -104,7 +111,8 @@ def engine_fight(contest):
             board, move = black_client.engine_action(board)
             red_client.board_move(temp, move)
         red_turn = not red_turn
-    return red_client.board_end(board)
+        record.append_board(board)
+    return red_client.board_end(board), record
 
 
 port1 = 12138
@@ -113,8 +121,7 @@ port2 = 12138 + 1
 Contest = namedtuple('Contest', ['thread_num', 'think_time', 'repeat'])
 red_client = Client("127.0.0.1", port1)
 black_client = Client("127.0.0.1", port2)
-contests = []
-contests.append(Contest(4, 5, 3))
+contests = [Contest(4, 1, 1)]
 final_result = ChessTournament(binary_set)
 
 for contest in contests:
@@ -124,15 +131,24 @@ for contest in contests:
     for ii in range(contest.repeat):
         for binary1 in binary_set:
             for binary2 in binary_set:
+                if binary1 == binary2:
+                    continue
+
+                run_shell_print(f"lsof -i :{port1} | awk 'NR!=1 {{print $2}}' | xargs kill", continue_on_error=True)
+                run_shell_print(f"lsof -i :{port2} | awk 'NR!=1 {{print $2}}' | xargs kill", continue_on_error=True)
                 run_shell_print(
-                    f"nohup ./binary/{binary1} --thread_num {contest.thread_num} --port {port1} > {binary1}.log 2>&1 &")
+                    f"nohup ./binary/{binary1} --thread_num {contest.thread_num} --port {port1} > {binary1}.output 2>&1 &")
                 run_shell_print(
-                    f"nohup ./binary/{binary2} --thread_num {contest.thread_num} --port {port2} > {binary2}.log 2>&1 &")
-                end = engine_fight(contest)
+                    f"nohup ./binary/{binary2} --thread_num {contest.thread_num} --port {port2} > {binary2}.output 2>&1 &")
+                time.sleep(2)
+                end, record = engine_fight(contest)
+                assert isinstance(record, ChessRecord)
+                with open(f"{binary1}_{binary2}_{contest.thread_num}_{contest.think_time}_{ii}.qp", "w") as f:
+                    f.write(record.to_json())
                 result.record_result(binary1, binary2, end)
                 final_result.record_result(binary1, binary2, end)
-                run_shell_print(f"pkill -f {binary1}")
-                run_shell_print(f"pkill -f {binary2}")
+                run_shell_print(f"pkill -f {binary1}", continue_on_error=True)
+                run_shell_print(f"pkill -f {binary2}", continue_on_error=True)
     result.calculate_scores()
     result.print_table()
 

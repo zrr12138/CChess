@@ -71,6 +71,23 @@ def handle_key_down(ctx, event):
             ctx.status = Status.PLACE
         elif event.key == pygame.K_i:
             ctx.board = client.get_init_board()
+        elif event.key == pygame.K_l:
+            file_dialog = pygame_gui.windows.UIFileDialog(
+                pygame.Rect(200, 200, 400, 200),
+                gui_manager,
+                window_title="选择要打开的 .qp 文件",
+                initial_file_path="/home/zrr/cchess_test",
+                allow_existing_files_only=True,
+            )
+        elif event.key == pygame.K_RIGHT:
+            print(ctx.record_index)
+            if ctx.record and ctx.record_index + 1 < ctx.record.get_total_boards():
+                ctx.record_index += 1
+                ctx.board = ctx.record.get_board(ctx.record_index)
+        elif event.key == pygame.K_LEFT:
+            if ctx.record and ctx.record_index - 1 >= 0:
+                ctx.record_index -= 1
+                ctx.board = ctx.record.get_board(ctx.record_index)
     elif ctx.status == Status.FINISH:
         if event.key == pygame.K_i:
             ctx.board = client.get_init_board()
@@ -113,6 +130,18 @@ def handle_event(ctx: Context, event: pygame.event.Event):
     if event.type == pygame.QUIT:
         client.engine_stop()
         ctx.running = False
+    if event.type == pygame.USEREVENT:
+        if event.user_type == pygame_gui.UI_FILE_DIALOG_PATH_PICKED:
+            if event.text:
+                try:
+                    with open(event.text, 'r') as file:
+                        content = file.read()
+                        ctx.record = ChessRecord()
+                        ctx.record.from_json(content)
+                        ctx.record_index=0
+                        ctx.board=ctx.record.get_board(0)
+                except Exception as e:
+                    print(e)
 
 
 last_refresh_think_text_time = 0
@@ -141,6 +170,7 @@ help_text_box = pygame_gui.elements.UITextBox(
                               window_size[1] - chess_board.get_rect().height),
     manager=gui_manager
 )
+
 ctx.board = client.get_init_board()
 
 while ctx.running:
@@ -148,6 +178,7 @@ while ctx.running:
         print(event)
         gui_manager.process_events(event)
         handle_event(ctx, event)
+
     screen.fill((255, 255, 255))
     gui_manager.update(pygame.time.Clock().tick(60) / 1000.0)
     ctx.board.draw(screen)
