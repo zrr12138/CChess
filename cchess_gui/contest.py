@@ -6,6 +6,7 @@ import shutil
 from client import Client
 from collections import namedtuple
 from chess_board import *
+from chess_tournament import ChessTournament
 
 
 def run_shell_print(args, try_num: int = 1, retry_interval: int = 3, continue_on_error: bool = False,
@@ -113,16 +114,26 @@ red_client = Client("127.0.0.1", port1)
 black_client = Client("127.0.0.1", port2)
 contests = []
 contests.append(Contest(4, 5, 3))
+final_result = ChessTournament(binary_set)
 
 for contest in contests:
     assert isinstance(contest, Contest)
+    print(contest)
+    result = ChessTournament(binary_set)
+    for ii in range(contest.repeat):
+        for binary1 in binary_set:
+            for binary2 in binary_set:
+                run_shell_print(
+                    f"nohup ./binary/{binary1} --thread_num {contest.thread_num} --port {port1} > {binary1}.log 2>&1 &")
+                run_shell_print(
+                    f"nohup ./binary/{binary2} --thread_num {contest.thread_num} --port {port2} > {binary2}.log 2>&1 &")
+                end = engine_fight(contest)
+                result.record_result(binary1, binary2, end)
+                final_result.record_result(binary1, binary2, end)
+                run_shell_print(f"pkill -f {binary1}")
+                run_shell_print(f"pkill -f {binary2}")
+    result.calculate_scores()
+    result.print_table()
 
-    for binary1 in binary_set:
-        for binary2 in binary_set:
-            run_shell_print(
-                f"nohup ./binary/{binary1} --thread_num {contest.thread_num} --port {port1} > {binary1}.log 2>&1 &")
-            run_shell_print(
-                f"nohup ./binary/{binary2} --thread_num {contest.thread_num} --port {port2} > {binary2}.log 2>&1 &")
-            engine_fight(contest)
-            run_shell_print(f"pkill -f {binary1}")
-            run_shell_print(f"pkill -f {binary2}")
+final_result.calculate_scores()
+final_result.print_table()
