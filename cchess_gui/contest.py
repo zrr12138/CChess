@@ -7,6 +7,7 @@ from client import Client
 from collections import namedtuple
 from chess_board import *
 from chess_tournament import ChessTournament
+from logger import logger
 
 
 def run_shell_print(args, try_num: int = 1, retry_interval: int = 3, continue_on_error: bool = False,
@@ -62,7 +63,6 @@ if not os.path.exists(BINARY_PATH):
 binary_exist_set = os.listdir(BINARY_PATH)
 binary_set = []
 
-
 run_shell_print(f"rm -f {TEST_PATH}/engine_list")
 shutil.copy(os.path.join(script_dir, "engine_list"), TEST_PATH)
 if not os.path.exists(os.path.join(TEST_PATH, "image")):
@@ -90,7 +90,7 @@ def engine_fight(contest):
     assert isinstance(contest, Contest)
     board = ChessBoard()
 
-    board= red_client.get_init_board()["board"]
+    board = red_client.get_init_board()["board"]
 
     red_client.start_search(board, True)
     black_client.start_search(board, True)
@@ -98,22 +98,36 @@ def engine_fight(contest):
     red_turn = True
     turn_cnt = 0
     record.append_board(board)
-    while red_client.board_end(board) == BoardResult.NOT_END:
+    while red_client.board_end(board)["end"] == BoardResult.NOT_END:
         turn_cnt += 1
         if turn_cnt > 400:
             return BoardResult.NOT_END
         time.sleep(contest.think_time)
         if red_turn:
             temp = copy.deepcopy(board)
-            board, move = red_client.engine_action(board)
-            black_client.board_move(temp, move)
+            res = red_client.engine_action(board)
+            if res["error"] != 0:
+                logger.error(f"red action failed")
+                return BoardResult.BLACK_WIN, record
+            move = res["move"]
+            res = black_client.board_move(temp, move)
+            if res["error"] != 0:
+                logger.error(f"board move failed {move.to_string()} {temp.to_string()}")
+                return BoardResult.RED_WIN, record
         else:
             temp = copy.deepcopy(board)
-            board, move = black_client.engine_action(board)
-            red_client.board_move(temp, move)
+            res = black_client.engine_action(board)
+            if res["error"] != 0:
+                logger.error(f"black action failed")
+                return BoardResult.RED_WIN, record
+            move = res["move"]
+            res = red_client.board_move(temp, move)
+            if res["error"] != 0:
+                logger.error(f"board move failed {move.to_string()} {temp.to_string()}")
+                return BoardResult.BLACK_WIN, record
         red_turn = not red_turn
         record.append_board(board)
-    return red_client.board_end(board), record
+    return red_client.board_end(board)["end"], record
 
 
 port1 = 12138

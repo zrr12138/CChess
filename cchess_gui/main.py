@@ -39,8 +39,10 @@ def handle_chess_board_mouse_button_down(ctx, event, x: int, y: int):
                 else:
                     ctx.choose_pos = (x, y)
             else:
-                ctx.board = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
-                end = client.board_end(ctx.board)
+                res = client.board_move(ctx.board, Move(ctx.choose_pos[0], ctx.choose_pos[1], x, y))
+                if res["error"] == 0:
+                    ctx.board = res["board"]
+                end = client.board_end(ctx.board)["end"]
                 if end != BoardResult.NOT_END:
                     ctx.status = Status.FINISH
                 ctx.choose_pos = None
@@ -52,8 +54,10 @@ def handle_key_down(ctx, event):
             client.engine_stop()
             ctx.status = Status.PAUSE
         elif event.key == pygame.K_m:
-            ctx.board = client.engine_action(ctx.board)
-            end = client.board_end(ctx.board)
+            res = client.engine_action(ctx.board)
+            assert res["error"] == 0
+            ctx.board = res["board"]
+            end = client.board_end(ctx.board)["end"]
             if end != BoardResult.NOT_END:
                 ctx.status = Status.FINISH
 
@@ -66,11 +70,13 @@ def handle_key_down(ctx, event):
             ctx.status = Status.SEARCHING
             ctx.think_text = ""
         elif event.key == pygame.K_r:
-            ctx.board = client.reverse_board(ctx.board)
+            res = client.reverse_board(ctx.board)
+            assert res["error"] == 0
+            ctx.board = res["board"]
         elif event.key == pygame.K_p:
             ctx.status = Status.PLACE
         elif event.key == pygame.K_i:
-            ctx.board = client.get_init_board()
+            ctx.board = client.get_init_board()["board"]
         elif event.key == pygame.K_l:
             file_dialog = pygame_gui.windows.UIFileDialog(
                 pygame.Rect(200, 200, 400, 200),
@@ -90,7 +96,7 @@ def handle_key_down(ctx, event):
                 ctx.board = ctx.record.get_board(ctx.record_index)
     elif ctx.status == Status.FINISH:
         if event.key == pygame.K_i:
-            ctx.board = client.get_init_board()
+            ctx.board = client.get_init_board()["board"]
             ctx.status = Status.PAUSE
     elif ctx.status == Status.PLACE:
         chess_type = None
@@ -117,6 +123,10 @@ def handle_key_down(ctx, event):
             ctx.place_red = not ctx.place_red
         if event.key == pygame.K_d:
             ctx.status = Status.PAUSE
+        if event.key == pygame.K_SPACE:
+            ctx.board = ChessBoard()
+            ctx.board.set_chess(0, 5, Chess(ChessType.Wang, False))
+            ctx.board.set_chess(9, 4, Chess(ChessType.Wang, True))
 
 
 def handle_event(ctx: Context, event: pygame.event.Event):
@@ -154,7 +164,9 @@ def refresh_think_text(ctx: Context):
     if time_since_last_call < 5:
         return
     last_refresh_think_text_time = current_time
-    ctx.think_text = client.best_path() + "\n" + ctx.think_text
+    res = client.best_path()
+    if res["error"] == 0:
+        ctx.think_text = res["best_path"] + "\n" + ctx.think_text
 
 
 chess_board = ctx.board.image
