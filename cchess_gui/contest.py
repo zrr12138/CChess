@@ -62,7 +62,8 @@ if not os.path.exists(BINARY_PATH):
 binary_exist_set = os.listdir(BINARY_PATH)
 binary_set = []
 
-os.remove(os.path.join(TEST_PATH, "engine_list"))
+
+run_shell_print(f"rm -f {TEST_PATH}/engine_list")
 shutil.copy(os.path.join(script_dir, "engine_list"), TEST_PATH)
 if not os.path.exists(os.path.join(TEST_PATH, "image")):
     run_shell_print("cp -r CChess/cchess_gui/image .")
@@ -89,10 +90,10 @@ def engine_fight(contest):
     assert isinstance(contest, Contest)
     board = ChessBoard()
 
-    board = red_client.get_init_board()
+    board= red_client.get_init_board()["board"]
 
     red_client.start_search(board, True)
-    black_client.start_search(board, False)
+    black_client.start_search(board, True)
 
     red_turn = True
     turn_cnt = 0

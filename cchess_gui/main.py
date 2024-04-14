@@ -138,8 +138,8 @@ def handle_event(ctx: Context, event: pygame.event.Event):
                         content = file.read()
                         ctx.record = ChessRecord()
                         ctx.record.from_json(content)
-                        ctx.record_index=0
-                        ctx.board=ctx.record.get_board(0)
+                        ctx.record_index = 0
+                        ctx.board = ctx.record.get_board(0)
                 except Exception as e:
                     print(e)
 
@@ -171,7 +171,7 @@ help_text_box = pygame_gui.elements.UITextBox(
     manager=gui_manager
 )
 
-ctx.board = client.get_init_board()
+ctx.board = client.get_init_board()["board"]
 
 while ctx.running:
     for event in pygame.event.get():
