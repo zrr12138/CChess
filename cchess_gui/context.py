@@ -31,6 +31,6 @@ class Context:
         elif self.status == Status.PAUSE:
             return "s-开始搜索(红先) ctrl+s-开始搜索(黑先) r-棋盘翻转 p-放置模式\n i-初始化棋盘 l-加载棋谱  <-- 上一步  -->下一步"
         elif self.status == Status.PLACE:
-            return "w-王 m-马 b-兵 s-士 j-车 p-炮 x-象 tab切换红黑 右键删除棋子 d-结束放置"
+            return "w-王 m-马 b-兵 s-士 j-车 p-炮 x-象 tab切换红黑 右键删除棋子 空格-清空棋盘 d-结束放置"
         elif self.status == Status.FINISH:
             return "i-初始化棋盘"
