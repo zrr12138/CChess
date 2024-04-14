@@ -98,9 +98,9 @@ int main(int argc, char *argv[]) {
             return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
         }
         ChessBoard::Hash hash;
-        LOG(WARNING) << (engine.GetChessBoard().ToString() == board.ToString());
-        LOG(WARNING) << hash(engine.GetChessBoard()) << " " << hash(board);
-        LOG(WARNING) << hash(engine.GetChessBoard());
+        // LOG(WARNING) << (engine.GetChessBoard().ToString() == board.ToString());
+        // LOG(WARNING) << hash(engine.GetChessBoard()) << " " << hash(board);
+        // LOG(WARNING) << hash(engine.GetChessBoard());
         if (hash(engine.GetChessBoard()) != hash(board)) {
             return crow::json::wvalue({{"error", BOARD_INCORRECT}});
         }
