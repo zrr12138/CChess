@@ -15,7 +15,7 @@ DEFINE_int32(thread_num, 1, "");
 DEFINE_int32(port, 12138, "");
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
-    google::InitGoogleLogging("CChess_server");
+    google::InitGoogleLogging(argv[0]);
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
     FLAGS_logtostdout = true;
