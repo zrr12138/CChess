@@ -40,27 +40,28 @@ def run_shell_print(args, try_num: int = 1, retry_interval: int = 3, continue_on
         return result
 
 
-# Get the directory of the current script
+TEST_PATH = "/home/zrr/cchess_test"
+CCHESS_PATH = os.path.join(TEST_PATH, "CChess")
+BINARY_PATH=os.path.join(TEST_PATH,"binary")
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-# Get the current working directory
-current_dir = os.getcwd()
+if not os.path.exists(TEST_PATH):
+    print("test path not exist")
+    sys.exit(-1)
 
-# Check if the current working directory matches the script directory
-if current_dir != script_dir:
-    print("The current working directory does not match the directory of the script!")
-    print("Please change the working directory to the script directory:", script_dir)
-    exit()
+os.chdir(TEST_PATH)
 
-if not os.path.exists("CChess"):
+if not os.path.exists(CCHESS_PATH):
     run_shell_print("git clone git@github.com:zrr12138/CChess.git")
 else:
     run_shell_print("cd CChess && git fetch --all")
 
-if not os.path.exists("binary"):
-    os.mkdir("binary")
 
-binary_set = os.listdir("binary")
+if not os.path.exists(BINARY_PATH):
+    os.mkdir(BINARY_PATH)
+
+binary_set = os.listdir(BINARY_PATH)
+run_shell_print(f"cp {script_dir}/engine_list {TEST_PATH}")
 with open("engine_list", "r") as f:
     for line in f.readlines():
         git_version = line.strip()
@@ -71,7 +72,7 @@ with open("engine_list", "r") as f:
             continue
         run_shell_print(f"cd CChess && git checkout {git_version}")
         run_shell_print("cd CChess/engine && bash build.sh")
-        run_shell_print(f"cp CChess/engine/build/server binary/{name}")
+        run_shell_print(f"cp CChess/engine/build/server {BINARY_PATH}/{name}")
         binary_set.append(name)
 
 print("binary generate finish!")
