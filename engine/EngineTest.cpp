@@ -14,6 +14,7 @@
 #include <random>
 #include "gflags/gflags.h"
 #include "glog/logging.h"
+#include "WeightedRandomSelector.h"
 
 using namespace CChess;
 
@@ -24,7 +25,7 @@ void test1() {
     MCTSEngine engine(1);
 
     auto start = common::TimeUtility::CLockRealTimeMs();
-    int n = 1000;
+    int n = 10000;
     int black = 0;
     int red = 0;
     int He = 0;
@@ -103,14 +104,55 @@ void test4() {
 
 }
 
+void test5() {
+    const int size = 5;
+    int a[] = {1, 2, 3, 4, 5};
+    int sum = std::accumulate(a, a + size, 0);
+    int cnt[size] = {0};
+    WeightedRandomSelector selector(a, 5);
+
+    int n = 100000000;
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    for (int i = 0; i < n; i++) {
+        cnt[selector.getRandomIndex()]++;
+    }
+    std::cout << "pick " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms" << std::endl;
+    for (int i = 0; i < size; i++) {
+        double probability = static_cast<double>(cnt[i]) / n;
+        std::cout << "Probability of index " << i << ": " << probability << std::endl;
+        assert(std::abs(probability - static_cast<double >(a[i]) / sum) < 0.001);
+    }
+    std::cout << "change a[1] to 100" << std::endl;
+    a[1] = 100;
+    selector.UpdateWeight(1, 100);
+    sum = std::accumulate(a, a + size, 0);
+    memset(cnt, 0, sizeof(cnt));
+    for (int i = 0; i < n; i++) {
+        cnt[selector.getRandomIndex()]++;
+    }
+    for (int i = 0; i < size; i++) {
+        double probability = static_cast<double>(cnt[i]) / n;
+        std::cout << "Probability of index " << i << ": " << probability << std::endl;
+        assert(std::abs(probability - static_cast<double >(a[i]) / sum) < 0.001);
+    }
+
+    start = common::TimeUtility::CLockRealTimeMs();
+    for(int i=0;i<n;i++){
+        selector.UpdateWeight(0,i);
+    }
+    std::cout << "update weight " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms" << std::endl;
+
+}
+
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging(argv[0]);
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
-
-    test1();
-    test2(8);
-    test3();
-    test4();
+//
+//    test1();
+//    test2(8);
+//    test3();
+//    test4();
+    test5();
 }
