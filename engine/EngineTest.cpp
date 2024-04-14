@@ -69,19 +69,29 @@ void test3(){
     engine.Stop();
 
 }
-void test4(){
+void test4() {
     MCTSEngine engine(8);
-    {
-        ChessBoard board;
-        board.initBoard();
-        engine.StartSearch(board, true);
-    }
+
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 3);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 5);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 3);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
+    board.SetChessAt(Chess(ChessType::Bing, true), 3, 4);
+
+    engine.StartSearch(board, true);
+
     std::vector<std::pair<ChessMove, double>> path;
     std::this_thread::sleep_for(std::chrono::seconds(10));
     engine.GetBestPath(&path);
+    auto &new_board = const_cast<ChessBoard &>(engine.GetChessBoard());
     for(auto &it:path){
         std::string move_str;
         assert(engine.GetChessBoard().MoveConversion(it.first,&move_str));
+        board.Move(it.first);
+        new_board = board;
         std::cout<<move_str<<"("<<it.second<<")"<<"-->";
     }
     std::cout<<std::endl;

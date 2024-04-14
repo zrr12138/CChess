@@ -385,6 +385,36 @@ void test15(){
     assert(moves.size() == 3);
 
 }
+void test16() {
+    ChessBoard board;
+    board.ClearBoard();
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 3);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 5);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 3);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
+    board.SetChessAt(Chess(ChessType::Bing, true), 3, 4);
+    std::string QiPu;
+    std::vector<ChessMove> moves;
+    board.MoveConversion(ChessMove(3, 4, 2, 4), &QiPu);
+    board.Move(ChessMove(3, 4, 2, 4));
+    assert(QiPu == "兵五进一");
+    board.MoveConversion(ChessMove(2, 5, 1, 4), &QiPu);
+    board.Move(ChessMove(2, 5, 1, 4));
+    assert(QiPu == "仕6退5");
+    board.MoveConversion(ChessMove(1, 5, 1, 4), &QiPu);
+    board.Move(ChessMove(1, 5, 1, 4));
+    assert(QiPu == "兵四平五");
+    board.MoveConversion(ChessMove(2, 3, 1, 4), &QiPu);
+    board.Move(ChessMove(2, 3, 1, 4));
+    assert(QiPu == "仕4退5");
+    board.MoveConversion(ChessMove(2, 4, 1, 4), &QiPu);
+    board.Move(ChessMove(2, 4, 1, 4));
+    std::cout << QiPu << std::endl;
+    assert(QiPu == "兵五进一");
+
+}
 int main(int argc, char *argv[]) {
     test1();
     test2();
@@ -400,4 +430,5 @@ int main(int argc, char *argv[]) {
     test13();
     test14();
     test15();
+    test16();
 }
