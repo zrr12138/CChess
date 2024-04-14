@@ -271,14 +271,14 @@ namespace CChess {
                       << move_node->second;
             auto &move = move_node->first;
             auto &node = move_node->second;
-            ctx->board.Move(move);
+            assert(ctx->board.Move(move));
             auto res = node->ExpandTree(ctx);
             UpdateValue(res);
             return res;
         } else {
             assert(move_node_[index].second == nullptr);
             move_node_[index].second = new Node(!is_red, engine_);
-            ctx->board.Move(move_node_[index].first);
+            assert(ctx->board.Move(move_node_[index].first));
             LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second << " with "
                       << move_node_[index].first << " start simulation";
             auto res = move_node_[index].second->Simulation(ctx);
