@@ -11,7 +11,6 @@
 
 using namespace CChess;
 
-DEFINE_int32(thread_num, 8, "");
 DEFINE_int32(port, 12138, "");
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
@@ -19,7 +18,7 @@ int main(int argc, char *argv[]) {
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
     FLAGS_logtostdout = true;
-    MCTSEngine engine(FLAGS_thread_num);
+    auto &engine=MCTSEngine::getInstance();
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")([&]() {
@@ -139,6 +138,13 @@ int main(int argc, char *argv[]) {
             is_first= false;
         }
         return crow::json::wvalue({{"error", OK},{"best_path",ss.str()}});
+
+    });
+    CROW_ROUTE(app, "/root_choose")([&](const crow::request &req) {
+        if (!engine.IsRunning()) {
+            return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
+        }
+        return crow::json::wvalue({{"error", OK},{"root_choose",engine.GetRootChooseStr()}});
 
     });
     //board api

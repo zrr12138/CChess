@@ -22,10 +22,10 @@ void test1() {
     ChessBoard board;
     //board.BoardRed(true);
     board.initBoard();
-    MCTSEngine engine(1);
+    auto &engine = MCTSEngine::getInstance();
 
     auto start = common::TimeUtility::CLockRealTimeMs();
-    int n = 10000;
+    int n = 100000;
     int black = 0;
     int red = 0;
     int He = 0;
@@ -42,10 +42,10 @@ void test1() {
     std::cout << "simulation " << n << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
 }
 
-void test2(int thread_num) {
+void test2() {
     ChessBoard board;
     board.initBoard();
-    MCTSEngine engine(thread_num);
+    auto &engine = MCTSEngine::getInstance();
     engine.StartSearch(board, true);
     int step = 50;
     while (board.End() == BoardResult::NOT_END) {
@@ -65,7 +65,7 @@ void test2(int thread_num) {
 
 void test3() {
     ChessBoard board;
-    MCTSEngine engine(1);
+    auto &engine = MCTSEngine::getInstance();
     board.initBoard();
     engine.StartSearch(board, true);
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -77,7 +77,7 @@ void test3() {
 }
 
 void test4() {
-    MCTSEngine engine(8);
+    auto &engine = MCTSEngine::getInstance();
     {
         ChessBoard board;
         board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
@@ -137,22 +137,60 @@ void test5() {
     }
 
     start = common::TimeUtility::CLockRealTimeMs();
-    for(int i=0;i<n;i++){
-        selector.UpdateWeight(0,i);
+    for (int i = 0; i < n; i++) {
+        selector.UpdateWeight(0, i);
     }
-    std::cout << "update weight " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms" << std::endl;
+    std::cout << "update weight " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms"
+              << std::endl;
 
 }
 
+void engine_auto_action(ChessBoard board, bool is_red) {
+    auto &engine = MCTSEngine::getInstance();
+    engine.StartSearch(board, is_red);
+    int step = 50;
+    while (board.End() == BoardResult::NOT_END) {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        auto move = engine.GetResult();
+        std::string move_string;
+        assert(board.MoveConversion(move, &move_string));
+        std::cout << "move:" << move << " " << move_string << std::endl;
+        engine.Action(move);
+        assert(board.Move(move));
+        if (step-- < 0) {
+            break;
+        }
+    }
+    engine.Stop();
+}
+
+void test6() {
+    ChessBoard board;
+    board.ParseFromString(
+            R"([{"type": 2, "is_red": true, "row": 0, "col": 3}, {"type": 0, "is_red": false, "row": 0, "col": 5}, {"type": 2, "is_red": true, "row": 1, "col": 4}, {"type": 2, "is_red": true, "row": 2, "col": 5}, {"type": 4, "is_red": false, "row": 8, "col": 0}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
+    engine_auto_action(board, false);
+}
+void test7(){
+    ChessBoard board;
+    board.ParseFromString(R"([{"type": 4, "is_red": true, "row": 0, "col": 4}, {"type": 5, "is_red": true, "row": 0, "col": 5}, {"type": 0, "is_red": false, "row": 1, "col": 5}, {"type": 4, "is_red": false, "row": 7, "col": 6}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
+    auto &engine = MCTSEngine::getInstance();
+    assert(engine.StartSearch(board, false));
+    std::this_thread::sleep_for(std::chrono::seconds(60));
+    std::cout<<"10 seconds root n"<<engine.GetRootN()<<std::endl;
+    NodeHashManager::getInstance().Dump();
+    engine.Stop();
+}
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging(argv[0]);
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
-//
+
 //    test1();
-//    test2(8);
+//    test2();
 //    test3();
 //    test4();
-    test5();
+//    test5();
+//    test6();
+    test7();
 }

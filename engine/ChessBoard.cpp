@@ -7,6 +7,9 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <iostream>
+#include <mutex>
+#include <thread>
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
@@ -225,14 +228,14 @@ namespace CChess {
                     if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                     } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            AddMoveIfValid(row, col, end_x, end_y, moves);
-                        }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
                 } else if (end_x > 6 && end_x <= 9) {
                     if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                     } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            AddMoveIfValid(row, col, end_x, end_y, moves);
-                        }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
                 }
             }
         }
@@ -243,7 +246,7 @@ namespace CChess {
         int ReGuohe[3][2] = {{-1, 0},
                              {0,  1},
                              {0,  -1}};
-        int BaGuohe[3][2] = {{1,  0},
+        int BaGuohe[3][2] = {{1, 0},
                              {0, 1},
                              {0, -1}};
         for (int i = 0; i < 3; i++) {
@@ -1034,7 +1037,10 @@ namespace CChess {
         bool isRed = board[move.start_x][move.start_y].is_red;
         conversion = GetFileRank(move, isRed, conversion);
         if (move.start_x == move.end_x) {
-            conversion += "平" + GetNumberName(8 - move.end_y, isRed);
+            if (isRed)
+                conversion += "平" + GetNumberName(8 - move.end_y, isRed);
+            else
+                conversion += "平" + GetNumberName(move.end_y, isRed);
             return conversion;
         } else if (red_at_0 == isRed && move.end_x > move.start_x || red_at_0 != isRed && move.end_x < move.start_x) {
             conversion += "进";
@@ -1290,12 +1296,37 @@ namespace CChess {
             for (int j = 0; j < 9; j++) {
                 size_t temp = 0;
                 auto &chess = chessBoard.GetChessAt(i, j);
-                if (!chess.IsEmpty()) {
-                    temp = chess.is_red ? 19 : 71 + chess.type;
-                }
+                temp = getChessHash(chess);
                 res = res * 131 + temp;
             }
         }
         return res;
     }
+
+    std::size_t ChessBoard::Hash::getNextHash(std::size_t hash, const ChessBoard &chessBoard, const ChessMove &move) {
+        std::call_once(Hash::once_flag, []{
+            Power131[0] = 1;
+            for (int i = 1; i < 100; i++) {
+                Power131[i] = Power131[i - 1] * 131;
+            }
+        });
+        auto start_power=Power131[90-1-ChessBoard::convert2DTo1D(move.start_x,move.start_y)];
+        auto end_power=Power131[90-1-ChessBoard::convert2DTo1D(move.end_x,move.end_y)];
+        auto start_chess=chessBoard.GetChessAt(move.start_x,move.start_y);
+        auto end_chess=chessBoard.GetChessAt(move.end_x,move.end_y);
+        assert(start_chess.type!=ChessType::Empty);
+        hash-= getChessHash(start_chess)*start_power;
+        hash-= getChessHash(end_chess)*end_power;
+        hash+= getChessHash(start_chess)*end_power;
+        return hash;
+    }
+
+    size_t ChessBoard::Hash::getChessHash(const Chess &chess) {
+        if(chess.IsEmpty()){
+            return 0;
+        }
+        return chess.is_red ? 19 : 71 + chess.type;
+    }
+    size_t ChessBoard::Hash::Power131[100] = {0};
+    std::once_flag ChessBoard::Hash::once_flag;
 }
