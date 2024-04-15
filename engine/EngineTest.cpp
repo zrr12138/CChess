@@ -25,7 +25,7 @@ void test1() {
     MCTSEngine engine(1);
 
     auto start = common::TimeUtility::CLockRealTimeMs();
-    int n = 10000;
+    int n = 100000;
     int black = 0;
     int red = 0;
     int He = 0;
@@ -150,9 +150,9 @@ int main(int argc, char *argv[]) {
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
 //
-//    test1();
+    test1();
 //    test2(8);
 //    test3();
 //    test4();
-    test5();
+    //test5();
 }

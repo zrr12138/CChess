@@ -21,6 +21,7 @@
 #include "common/defer.h"
 #include "common/spinlock.h"
 #include "common/defer.h"
+#include "WeightedRandomSelector.h"
 
 #define THROTTLE_CALL(delay) \
     do { \
@@ -296,12 +297,56 @@ namespace CChess {
     }
 
     BoardResult Node::Simulation(SearchCtx *ctx) {
+        auto convert2DTo1D = [](int row, int col) -> int {
+            const int numCols = 9;
+            return row * numCols + col;
+        };
+
+        auto convert1DTo2D = [](int index, int &row, int &col) -> void {
+            const int numCols = 9;
+            row = index / numCols;
+            col = index % numCols;
+        };
+
+        thread_local int weights[90] = {0};
+        thread_local std::vector<ChessMove> pos2moves[90];
         auto &board = ctx->board;
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 9; j++) {
+                int index = convert2DTo1D(i, j);
+                pos2moves[index].clear();
+                board.GetMovesFrom(i, j, &pos2moves[index]);
+                weights[index] = pos2moves[index].size();
+            }
+        }
+
+        thread_local std::minstd_rand generator{std::random_device{}()};
+        thread_local std::uniform_int_distribution<int> dist(1, std::numeric_limits<int>::max());
+
+        WeightedRandomSelector selector(weights, 90);
+
+
         int move_count_limit = 100;
         int move_count = 0;
         bool is_red_now = is_red;
         while (board.End() == BoardResult::NOT_END && move_count++ < move_count_limit) {
-            assert(board.Move(board.RandMove2(is_red_now)));
+            std::vector<ChessMove>* vec;
+            do {
+                auto vec_index = selector.getRandomIndex();
+                vec = &pos2moves[vec_index];
+                vec->clear();
+                int row,col;
+                convert1DTo2D(vec_index,row,col);
+                board.GetMovesFrom(row,col,vec);
+                selector.UpdateWeight(vec_index,vec->size());
+            } while (vec->empty());
+            auto &move = (*vec)[dist(generator) % vec->size()];
+            selector.UpdateWeight(convert2DTo1D(move.start_x, move.start_y), 0);
+            assert(board.Move(move)) ;
+            auto end_index = convert2DTo1D(move.end_x, move.end_y);
+            pos2moves[end_index].clear();
+            board.GetMovesFrom(move.end_x, move.end_y, &pos2moves[end_index]);
+            selector.UpdateWeight(end_index, pos2moves[end_index].size());
             is_red_now = !is_red_now;
         }
         BoardResult end = board.End();
