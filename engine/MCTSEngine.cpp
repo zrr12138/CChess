@@ -330,19 +330,19 @@ namespace CChess {
         int move_count = 0;
         bool is_red_now = is_red;
         while (board.End() == BoardResult::NOT_END && move_count++ < move_count_limit) {
-            std::vector<ChessMove>* vec;
+            std::vector<ChessMove> *vec = nullptr;
             do {
                 auto vec_index = selector.getRandomIndex();
                 vec = &pos2moves[vec_index];
                 vec->clear();
-                int row,col;
-                convert1DTo2D(vec_index,row,col);
-                board.GetMovesFrom(row,col,vec);
-                selector.UpdateWeight(vec_index,vec->size());
+                int row, col;
+                convert1DTo2D(vec_index, row, col);
+                board.GetMovesFrom(row, col, vec);
+                selector.UpdateWeight(vec_index, vec->size());
             } while (vec->empty());
             auto &move = (*vec)[dist(generator) % vec->size()];
             selector.UpdateWeight(convert2DTo1D(move.start_x, move.start_y), 0);
-            assert(board.Move(move)) ;
+            assert(board.Move(move));
             auto end_index = convert2DTo1D(move.end_x, move.end_y);
             pos2moves[end_index].clear();
             board.GetMovesFrom(move.end_x, move.end_y, &pos2moves[end_index]);
