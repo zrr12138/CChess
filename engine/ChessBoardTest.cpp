@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <math.h>
+#include <common/timeutility.h>
 #include <chrono>
 
 using namespace CChess;
@@ -413,7 +414,196 @@ void test16() {
     board.Move(ChessMove(2, 4, 1, 4));
     std::cout << QiPu << std::endl;
     assert(QiPu == "兵五进一");
+}
 
+void test17() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+    board.SetChessAt(Chess(ChessType::Pao, true), 5, 4);
+    board.SetChessAt(Chess(ChessType::Pao, false), 5, 7);
+    board.SetChessAt(Chess(ChessType::Ma, false), 5, 9);
+    board.SetChessAt(Chess(ChessType::Bing, true), 2, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(5, 4, 4, 4));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(4, 4, 4, 5));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    std::cout << "Pao simulation " << n*3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+}
+
+void test18() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+    board.SetChessAt(Chess(ChessType::Ju, true), 5, 4);
+    board.SetChessAt(Chess(ChessType::Pao, false), 5, 7);
+    board.SetChessAt(Chess(ChessType::Ma, false), 5, 9);
+    board.SetChessAt(Chess(ChessType::Bing, true), 2, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 3, 4);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(5, 4, 4, 4));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(4, 4, 4, 5));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 4, &moves);
+        moves.clear();
+    }
+    std::cout << "Ju simulation " << n*3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+}
+
+void test19() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 5);
+    board.SetChessAt(Chess(ChessType::Ju, true), 3, 6);
+    board.SetChessAt(Chess(ChessType::Pao, false), 5, 4);
+    board.SetChessAt(Chess(ChessType::Ma, false), 5, 5);
+    board.SetChessAt(Chess(ChessType::Bing, true), 5, 6);
+    board.SetChessAt(Chess(ChessType::Bing, false), 7, 6);
+    board.SetChessAt(Chess(ChessType::Ma, false), 5, 0);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 5, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(5, 4, 4, 4));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 5, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 0, &moves);
+        moves.clear();
+    }
+    std::cout << "Ma simulation " << n*3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+}
+void test20() {
+    ChessBoard board;
+    board.initBoard();
+    board.Move(ChessMove(9, 2, 7, 4));
+    board.Move(ChessMove(6, 2, 5, 2));
+    board.Move(ChessMove(9, 6, 7, 8));
+    board.Move(ChessMove(3, 6, 4, 6));
+    board.Move(ChessMove(4, 6, 5, 6));
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(7, 4, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(9, 1, 8, 3));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(7, 4, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(7, 8, &moves);
+        moves.clear();
+    }
+    std::cout << "Xiang simulation " << n * 3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+}
+void test21() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Shi, false), 0, 3);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 3);
+    board.SetChessAt(Chess(ChessType::Shi, true), 8, 4);
+    board.SetChessAt(Chess(ChessType::Bing, false), 7, 3);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 4);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(0, 3, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(2, 5, 1, 4));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(1, 4, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(8, 5, &moves);
+        moves.clear();
+    }
+    std::cout << "Shi simulation " << n * 3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+}
+void test22() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Shi, false), 0, 3);
+    board.SetChessAt(Chess(ChessType::Shi, false), 2, 5);
+    board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
+    board.SetChessAt(Chess(ChessType::Wang, true), 9, 3);
+    board.SetChessAt(Chess(ChessType::Shi, true), 8, 4);
+    board.SetChessAt(Chess(ChessType::Ma, false), 1, 3);
+    board.SetChessAt(Chess(ChessType::Bing, true), 1, 4);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(0, 4, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(9, 3, &moves);
+        moves.clear();
+    }
+    board.Move(ChessMove(0, 4, 1, 4));
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(1, 4, &moves);
+        moves.clear();
+    }
+    std::cout << "Wang simulation " << n * 3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
+
+}
+void test23() {
+    ChessBoard board;
+    board.SetChessAt(Chess(ChessType::Bing, false), 5, 6);
+    board.SetChessAt(Chess(ChessType::Bing, true), 6, 2);
+    board.SetChessAt(Chess(ChessType::Bing, false), 9, 4);
+    auto start = common::TimeUtility::CLockRealTimeMs();
+    int n = 10000000;
+    std::vector<ChessMove> moves;
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(5, 6, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(6, 2, &moves);
+        moves.clear();
+    }
+    for (int i = 0; i < n; i++) {
+        board.GetMovesFrom(9, 4, &moves);
+        moves.clear();
+    }
+    std::cout << "Bing simulation " << n * 3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
 }
 int main(int argc, char *argv[]) {
     test1();
@@ -431,4 +621,11 @@ int main(int argc, char *argv[]) {
     test14();
     test15();
     test16();
+    test17();
+    test18();
+    test19();
+    test20();
+    test21();
+    test22();
+    test23();
 }
