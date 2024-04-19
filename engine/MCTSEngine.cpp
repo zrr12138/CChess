@@ -307,46 +307,49 @@ namespace CChess {
             row = index / numCols;
             col = index % numCols;
         };
-
+//        Wang = 0,
+//        Ma = 1,
+//        Bing = 2,
+//        Shi = 3,
+//        Ju = 4,
+//        Pao = 5,
+//        Xiang = 6,
+        ChessType type;
+        int type2weight[] = {2, 8, 3, 2, 17, 17, 3};
         thread_local int weights[90] = {0};
-        thread_local std::vector<ChessMove> pos2moves[90];
         auto &board = ctx->board;
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
                 int index = convert2DTo1D(i, j);
-                pos2moves[index].clear();
-                board.GetMovesFrom(i, j, &pos2moves[index]);
-                weights[index] = pos2moves[index].size();
+                auto chess = board.GetChessAt(i, j);
+                weights[index] = chess.type == ChessType::Empty ? 0 : type2weight[chess.type];
             }
         }
 
+        WeightedRandomSelector selector(weights, 90);
         thread_local std::minstd_rand generator{std::random_device{}()};
         thread_local std::uniform_int_distribution<int> dist(1, std::numeric_limits<int>::max());
 
-        WeightedRandomSelector selector(weights, 90);
-
-
-        int move_count_limit = 100;
+        int move_count_limit = 300;
         int move_count = 0;
         bool is_red_now = is_red;
+        std::vector<ChessMove> temp;
         while (board.End() == BoardResult::NOT_END && move_count++ < move_count_limit) {
-            std::vector<ChessMove> *vec = nullptr;
+
+            int index;
             do {
-                auto vec_index = selector.getRandomIndex();
-                vec = &pos2moves[vec_index];
-                vec->clear();
+                index = selector.getRandomIndex();
                 int row, col;
-                convert1DTo2D(vec_index, row, col);
-                board.GetMovesFrom(row, col, vec);
-                selector.UpdateWeight(vec_index, vec->size());
-            } while (vec->empty());
-            auto &move = (*vec)[dist(generator) % vec->size()];
-            selector.UpdateWeight(convert2DTo1D(move.start_x, move.start_y), 0);
+                convert1DTo2D(index, row, col);
+                temp.clear();
+                board.GetMovesFrom(row, col, &temp);
+            } while (temp.empty());
+
+            auto &move = temp[dist(generator) % temp.size()];
             assert(board.Move(move));
-            auto end_index = convert2DTo1D(move.end_x, move.end_y);
-            pos2moves[end_index].clear();
-            board.GetMovesFrom(move.end_x, move.end_y, &pos2moves[end_index]);
-            selector.UpdateWeight(end_index, pos2moves[end_index].size());
+            int new_index = convert2DTo1D(move.end_x, move.end_y);
+            selector.UpdateWeight(new_index, type2weight[board.GetChessAt(move.end_x, move.end_y).type]);
+            selector.UpdateWeight(index, 0);
             is_red_now = !is_red_now;
         }
         BoardResult end = board.End();
