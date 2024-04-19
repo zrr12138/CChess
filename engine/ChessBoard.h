@@ -10,6 +10,10 @@
 #include <string>
 #include <ostream>
 #include <random>
+#include <iostream>
+#include <mutex>
+#include <thread>
+
 
 namespace CChess {
     enum ChessType {
@@ -22,13 +26,14 @@ namespace CChess {
         Pao = 5,
         Xiang = 6,
     };
+
     struct ChessMove {
         int start_x;
         int start_y;
         int end_x;
         int end_y;
 
-        ChessMove()=default;
+        ChessMove() = default;
 
         ChessMove(int startX, int startY, int endX, int endY);
 
@@ -42,6 +47,7 @@ namespace CChess {
 
         void ParseFromString(const std::string &str);
     };
+
     enum BoardResult {
         RED_WIN = 0,
         BLACK_WIN = 1,
@@ -75,7 +81,7 @@ namespace CChess {
         uint32_t xorshift_state{};
 
 
-        void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove>* moves) const;
+        void AddMoveIfValid(int start_x, int start_y, int end_x, int end_y, std::vector<ChessMove> *moves) const;
 
         void JuRule(int row, int col, std::vector<ChessMove> *moves) const;
 
@@ -99,13 +105,13 @@ namespace CChess {
 
         std::string GetFileRank(const ChessMove &move, bool isRed, std::string &conversion) const;
 
-        std::string GetColNumber(int col,bool is_red) const;
+        std::string GetColNumber(int col, bool is_red) const;
 
         uint32_t Xorshift32();
 
         int GetPieceValue(int x, int y, ChessType chess);
 
-        static bool ChessComparator(const Chess& chess1, const Chess& chess2);
+        static bool ChessComparator(const Chess &chess1, const Chess &chess2);
 
     public:
 
@@ -117,7 +123,7 @@ namespace CChess {
 
         void GetMovesFrom(int x, int y, std::vector<ChessMove> *move) const; //位于xy的棋子走法
 
-        const Chess & GetChessAt(int x, int y) const;
+        const Chess &GetChessAt(int x, int y) const;
 
         bool Move(const ChessMove &move);
 
@@ -129,7 +135,7 @@ namespace CChess {
 
         void SetChessAt(const Chess &chess, int x, int y); //将chess放置到xy处
 
-        bool MoveConversion (const ChessMove &move, std::string *QiPu) const;
+        bool MoveConversion(const ChessMove &move, std::string *QiPu) const;
 
         void ParseFromString(const std::string &str); //json字符串
 
@@ -147,12 +153,28 @@ namespace CChess {
 
         int EvaluatePosition();
 
-        void GetDeadChess (std::vector<Chess> *dead);
+        void GetDeadChess(std::vector<Chess> *dead);
 
         void Reverse();
 
+        static int convert2DTo1D(int row, int col) {
+            const int numCols = 9;
+            return row * numCols + col;
+        };
+
+        static void convert1DTo2D(int index, int *row, int *col) {
+            const int numCols = 9;
+            *row = index / numCols;
+            *col = index % numCols;
+        };
+
         struct Hash {
-            std::size_t operator()(const ChessBoard& chessBoard) const;
+            static size_t Power131[100];
+            static std::once_flag once_flag;
+
+            std::size_t operator()(const ChessBoard &chessBoard) const;
+
+            static std::size_t getNextHash(std::size_t hash, const ChessBoard &chessBoard, const ChessMove &move);
         };
 
     };

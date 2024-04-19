@@ -22,7 +22,7 @@ void test1() {
     ChessBoard board;
     //board.BoardRed(true);
     board.initBoard();
-    MCTSEngine engine(1);
+    auto &engine = MCTSEngine::getInstance();
 
     auto start = common::TimeUtility::CLockRealTimeMs();
     int n = 100000;
@@ -45,7 +45,7 @@ void test1() {
 void test2(int thread_num) {
     ChessBoard board;
     board.initBoard();
-    MCTSEngine engine(thread_num);
+    auto &engine = MCTSEngine::getInstance();
     engine.StartSearch(board, true);
     int step = 50;
     while (board.End() == BoardResult::NOT_END) {
@@ -65,7 +65,7 @@ void test2(int thread_num) {
 
 void test3() {
     ChessBoard board;
-    MCTSEngine engine(1);
+    auto &engine = MCTSEngine::getInstance();
     board.initBoard();
     engine.StartSearch(board, true);
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -77,7 +77,7 @@ void test3() {
 }
 
 void test4() {
-    MCTSEngine engine(8);
+    auto &engine = MCTSEngine::getInstance();
     {
         ChessBoard board;
         board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
@@ -137,10 +137,11 @@ void test5() {
     }
 
     start = common::TimeUtility::CLockRealTimeMs();
-    for(int i=0;i<n;i++){
-        selector.UpdateWeight(0,i);
+    for (int i = 0; i < n; i++) {
+        selector.UpdateWeight(0, i);
     }
-    std::cout << "update weight " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms" << std::endl;
+    std::cout << "update weight " << n << " cost " << common::TimeUtility::CLockRealTimeMs() - start << " ms"
+              << std::endl;
 
 }
 

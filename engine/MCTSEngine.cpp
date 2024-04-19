@@ -22,6 +22,10 @@
 #include "common/spinlock.h"
 #include "common/defer.h"
 #include "WeightedRandomSelector.h"
+#include "gflags/gflags.h"
+
+DEFINE_int32(thread_num, 8, "");
+DEFINE_double(explore_c,1,"");
 
 #define THROTTLE_CALL(delay) \
     do { \
@@ -33,11 +37,7 @@
         last_call_timestamp = now; \
     } while(0)
 namespace CChess {
-    MCTSEngine::MCTSEngine(int thread_num, double explore_c) : C(explore_c), thread_num_(thread_num), stop_(true),
-                                                               actioning(false), threadPool(nullptr),
-                                                               root_node_(nullptr) {
 
-    }
 
     bool MCTSEngine::StartSearch(const ChessBoard &state, bool red_first) {
         if (!stop_) {
@@ -47,7 +47,7 @@ namespace CChess {
         stop_.store(false);
         LOG(INFO) << __func__ << " board: " << state.ToString() << " red_first: " << red_first;
         //初始化根节点x
-        root_node_ = new Node(red_first, this);
+        root_node_ = new Node(red_first, nullptr,state);
         root_board_ = state;
         assert(threadPool == nullptr);
         threadPool = new common::ThreadPool();
@@ -225,7 +225,7 @@ namespace CChess {
     BoardResult MCTSEngine::Simulation(const ChessBoard &board, bool is_red) {
         SearchCtx ctx;
         ctx.board = board;
-        Node node(is_red, this);
+        Node node(is_red, nullptr, board);
         return node.Simulation(&ctx);
     }
 
@@ -244,9 +244,11 @@ namespace CChess {
     }
 
 
-    Node::Node(bool is_red, MCTSEngine *engine) : is_red(is_red), n(0), black_win_count(0), red_win_count(0),
-                                                  engine_(engine), access_cnt(0), inited(false), move_node_(nullptr),
-                                                  move_node_size_(0) {
+    Node::Node(bool is_red, Node *father, const ChessBoard &board)
+            : is_red(is_red), n(0), black_win_count(0), red_win_count(0),
+              access_cnt(0), inited(false), move_node_(nullptr),
+              move_node_size_(0),father(father) {
+
 
     }
 
@@ -284,8 +286,8 @@ namespace CChess {
             return res;
         } else {
             assert(move_node_[index].second == nullptr);
-            move_node_[index].second = new Node(!is_red, engine_);
             assert(ctx->board.Move(move_node_[index].first));
+            move_node_[index].second = new Node(!is_red, this, ctx->board);
             LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second << " with "
                       << move_node_[index].first << " start simulation";
             auto res = move_node_[index].second->Simulation(ctx);
@@ -405,7 +407,7 @@ namespace CChess {
     std::pair<ChessMove, Node *> *Node::GetBestMove() {
         assert(move_node_ != nullptr);
         assert(move_node_size_ > 0);
-        int64_t root_n = engine_->root_node_->n.load(std::memory_order::memory_order_relaxed);
+        int64_t root_n = MCTSEngine::getInstance().root_node_->n.load(std::memory_order::memory_order_relaxed);
         double ln_root_n = std::log(root_n);
         double max = 0;
         std::pair<ChessMove, Node *> *ptr = nullptr;
@@ -420,7 +422,7 @@ namespace CChess {
             } else {
                 sub_w = move_node_[i].second->black_win_count.load(std::memory_order::memory_order_relaxed);
             }
-            double ans = sub_w / sub_n + engine_->C * std::sqrt(ln_root_n / sub_n);
+            double ans = sub_w / sub_n + MCTSEngine::getInstance().C * std::sqrt(ln_root_n / sub_n);
             if (ans > max) {
                 max = ans;
                 ptr = move_node_ + i;

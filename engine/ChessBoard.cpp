@@ -7,6 +7,9 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <iostream>
+#include <mutex>
+#include <thread>
 #include "nlohmann/json.hpp"
 
 using json = nlohmann::json;
@@ -225,14 +228,14 @@ namespace CChess {
                     if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                     } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            AddMoveIfValid(row, col, end_x, end_y, moves);
-                        }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
                 } else if (end_x > 6 && end_x <= 9) {
                     if (board[end_x][end_y].IsEmpty()) {
                         AddMoveIfValid(row, col, end_x, end_y, moves);
                     } else if (board[row][col].is_red != board[end_x][end_y].is_red) {
-                            AddMoveIfValid(row, col, end_x, end_y, moves);
-                        }
+                        AddMoveIfValid(row, col, end_x, end_y, moves);
+                    }
                 }
             }
         }
@@ -243,7 +246,7 @@ namespace CChess {
         int ReGuohe[3][2] = {{-1, 0},
                              {0,  1},
                              {0,  -1}};
-        int BaGuohe[3][2] = {{1,  0},
+        int BaGuohe[3][2] = {{1, 0},
                              {0, 1},
                              {0, -1}};
         for (int i = 0; i < 3; i++) {
@@ -1297,5 +1300,16 @@ namespace CChess {
             }
         }
         return res;
+    }
+
+    std::size_t ChessBoard::Hash::getNextHash(std::size_t hash, const ChessBoard &chessBoard, const ChessMove &move) {
+        std::call_once(Hash::once_flag, []{
+            Power131[0] = 1;
+            for (int i = 1; i < 100; i++) {
+                Power131[i] = Power131[i - 1] * 131;
+            }
+        });
+        int start_power=90-ChessBoard::convert2DTo1D(move.start_x,move.start_y);
+        return 0;
     }
 }

@@ -7,29 +7,34 @@
 #include "ChessBoard.h"
 #include "common/rw_lock.h"
 #include "common/spinlock.h"
-
+#include "common/uncopyable.h"
+#include "gflags/gflags.h"
 #ifndef CCHESS_MCTSENGINE_H
 #define CCHESS_MCTSENGINE_H
 
-namespace CChess {
-    struct SearchCtx;
+DECLARE_int32(thread_num);
+DECLARE_double(explore_c);
 
+namespace CChess {
+
+    struct SearchCtx;
     class MCTSEngine;
 
     struct Node {
-        Node(bool is_red, MCTSEngine *engine);
+        Node(bool is_red, Node *father, const ChessBoard &board);
         ~Node();
         std::atomic<int64_t> n, red_win_count, black_win_count;
         std::atomic<int64_t> access_cnt;
-
+        Node *father;
         bool inited;
+        uint64_t hash;
+        uint64_t board_hash;
         common::SpinLock initLock;
 
         std::pair<ChessMove, Node*> *move_node_;
         int move_node_size_;
 
         bool is_red;
-        MCTSEngine *engine_;
 
         void UpdateValue(BoardResult res);
 
@@ -46,10 +51,15 @@ namespace CChess {
         ChessBoard board;
     };
 
-    class MCTSEngine {
+    class MCTSEngine: public common::Uncopyable{
         friend Node;
     public:
-        explicit MCTSEngine(int thread_num, double explore_c = std::sqrt(2));
+        static MCTSEngine& getInstance()
+        {
+            static MCTSEngine   instance; // Guaranteed to be destroyed.
+            // Instantiated on first use.
+            return instance;
+        }
 
         ~MCTSEngine();
 
@@ -83,6 +93,10 @@ namespace CChess {
         Node* root_node_;
         ChessBoard root_board_;
 
+        MCTSEngine():C(FLAGS_explore_c), thread_num_(FLAGS_thread_num), stop_(true),
+                     actioning(false), threadPool(nullptr),
+                     root_node_(nullptr) {}
+
         const int thread_num_;
 
         void LoopExpandTree();
@@ -92,6 +106,17 @@ namespace CChess {
         void getBestNode(Node *node, std::vector<std::pair<ChessMove, double>> *best_path);
 
 
+    };
+    class NodeHashManager : public common::Uncopyable{
+    public:
+        static NodeHashManager& getInstance()
+        {
+            static NodeHashManager    instance; // Guaranteed to be destroyed.
+            // Instantiated on first use.
+            return instance;
+        }
+    private:
+        NodeHashManager() {}
     };
 };
 
