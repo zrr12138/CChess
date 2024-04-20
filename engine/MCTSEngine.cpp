@@ -26,7 +26,7 @@
 #include "gflags/gflags.h"
 
 DEFINE_int32(thread_num, 8, "");
-DEFINE_double(explore_c, 100*sqrt(2), "");
+DEFINE_double(explore_c, sqrt(2.7), "");
 
 #define THROTTLE_CALL(delay) \
     do { \
