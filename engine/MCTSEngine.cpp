@@ -25,7 +25,7 @@
 #include "gflags/gflags.h"
 
 DEFINE_int32(thread_num, 8, "");
-DEFINE_double(explore_c,1,"");
+DEFINE_double(explore_c, 1, "");
 
 #define THROTTLE_CALL(delay) \
     do { \
@@ -47,7 +47,7 @@ namespace CChess {
         stop_.store(false);
         LOG(INFO) << __func__ << " board: " << state.ToString() << " red_first: " << red_first;
         //初始化根节点x
-        root_node_ = new Node(red_first, nullptr,state);
+        root_node_ = new Node(red_first, nullptr, state, ChessMove());
         root_board_ = state;
         assert(threadPool == nullptr);
         threadPool = new common::ThreadPool();
@@ -117,8 +117,10 @@ namespace CChess {
             }
         }
         LOG(WARNING) << "free node in " << common::TimeUtility::GetTimeofDayMs() - start << " ms";
-        free(root_node_);
+        NodeHashManager::getInstance().Remove(root_node_->node_hash);
+        delete root_node_;
         root_node_ = new_root;
+        root_node_->father = nullptr;
         assert(root_board_.Move(move));
         pause_cnt_ = 0;
         actioning = false;
@@ -209,6 +211,7 @@ namespace CChess {
             return;
         }
         defer({
+                  NodeHashManager::getInstance().Remove(root_node_->node_hash);
                   delete node;
                   node = nullptr;
               });
@@ -225,7 +228,7 @@ namespace CChess {
     BoardResult MCTSEngine::Simulation(const ChessBoard &board, bool is_red) {
         SearchCtx ctx;
         ctx.board = board;
-        Node node(is_red, nullptr, board);
+        Node node(is_red, nullptr, board, ChessMove());
         return node.Simulation(&ctx);
     }
 
@@ -244,11 +247,21 @@ namespace CChess {
     }
 
 
-    Node::Node(bool is_red, Node *father, const ChessBoard &board)
+    Node::Node(bool is_red, Node *father, const ChessBoard &board, const ChessMove &move)
             : is_red(is_red), n(0), black_win_count(0), red_win_count(0),
               access_cnt(0), inited(false), move_node_(nullptr),
-              move_node_size_(0),father(father) {
-
+              move_node_size_(0), father(father), move_(move), is_repeat(false) {
+        if (father == nullptr) {
+            ChessBoard::Hash hash_fun;
+            board_hash = hash_fun(board);
+        } else {
+            board_hash = ChessBoard::Hash::getNextHash(father->board_hash, board, move);
+        }
+        node_hash = NodeHashManager::GetNodeHash(board_hash, is_red);
+        if (NodeHashManager::getInstance().Get(node_hash)) {
+            SetRepeat();
+        }
+        NodeHashManager::getInstance().Add(node_hash);
 
     }
 
@@ -271,6 +284,11 @@ namespace CChess {
         if (!inited) {
             Init(ctx->board);
         }
+        if (move_node_size_ == 0) {
+            auto end = is_red ? BLACK_WIN : RED_WIN;
+            UpdateValue(end);
+            return end;
+        }
         if (index >= move_node_size_) {
             std::pair<ChessMove, Node *> *move_node = nullptr;
             do {
@@ -286,8 +304,9 @@ namespace CChess {
             return res;
         } else {
             assert(move_node_[index].second == nullptr);
-            assert(ctx->board.Move(move_node_[index].first));
-            move_node_[index].second = new Node(!is_red, this, ctx->board);
+            const ChessMove &move = move_node_[index].first;
+            move_node_[index].second = new Node(!is_red, this, ctx->board, move);
+            assert(ctx->board.Move(move));
             LOG(INFO) << __func__ << " node: " << this << " expand node: " << move_node_[index].second << " with "
                       << move_node_[index].first << " start simulation";
             auto res = move_node_[index].second->Simulation(ctx);
@@ -393,6 +412,9 @@ namespace CChess {
         moves.clear();
         board.GetMoves(is_red, &moves);
         assert(move_node_ == nullptr);
+        //FilterByRule 按照规则过滤不能走的棋
+        FilterByRule(board, &moves);
+        //
         move_node_size_ = moves.size();
         move_node_ = new std::pair<ChessMove, Node *>[move_node_size_];
         for (int i = 0; i < move_node_size_; i++) {
@@ -429,5 +451,108 @@ namespace CChess {
             }
         }
         return ptr;
+    }
+
+    void Node::SetRepeat() {
+        is_repeat = true;
+        // n = 100;
+    }
+
+    void Node::FilterByRule(const ChessBoard &board, std::vector<ChessMove> *moves) {
+        if (!IsRepeat()) {
+            return;
+        }
+        std::vector<ChessMove> cycle_moves;
+        bool find_cycle = false;
+        Node *node = this;
+        while (node->father != nullptr) {
+            cycle_moves.emplace_back(node->move_);
+            node = node->father;
+            if (node->node_hash == this->node_hash) {
+                find_cycle = true;
+                break;
+            }
+        }
+        if (!find_cycle) {
+            return;
+        }
+        //TODO(zrr) 对于同一个循环，这里可能会重复计算
+        std::reverse(cycle_moves.begin(), cycle_moves.end());
+        std::vector<int> score;
+        std::vector<ChessMove> temp;
+        auto temp_board = board;
+        auto temp_is_red = is_red;
+        static int type2ruleScore[] = {1000, 45, 10, 5, 90, 45, 10};
+        for (auto &cycle_move: cycle_moves) {
+            int this_move_score = 0;
+            assert(temp_board.Move(cycle_move));
+            temp.clear();
+            temp_board.GetMoves(temp_is_red, &temp); //下一步是否能杀王
+            for (auto &it: temp) {
+                auto &c = temp_board.GetChessAt(it.end_x, it.end_y);
+                if (c.type == ChessType::Wang && c.is_red == !temp_is_red) {
+                    this_move_score = 1000;
+                    goto next_cycle_move;
+                }
+            }
+            temp.clear();
+            temp_board.GetMovesFrom(cycle_move.end_x, cycle_move.end_y, &temp);
+            for (auto &it: temp) {
+                auto &c = temp_board.GetChessAt(it.end_x, it.end_y);
+                if (c.is_red == !temp_is_red) {
+                    this_move_score = type2ruleScore[c.type];
+                }
+            }
+            next_cycle_move:
+            score.emplace_back(this_move_score);
+            temp_is_red = !temp_is_red;
+        }
+        auto max_index = std::max_element(score.begin(), score.end()) - score.begin();
+        if (max_index == 0) {
+            bool is_cut = true;
+            for (int i = 1; i < score.size(); i += 2) {
+                if (score[0] - score[i] < 39) {
+                    is_cut = false;
+                    break;
+                }
+            }
+            if (is_cut) {
+                auto it = std::find(moves->begin(), moves->end(), cycle_moves[0]);
+                assert(it != moves->end());
+                moves->erase(it);
+            }
+        }
+    }
+
+    bool Node::IsRepeat() {
+        return is_repeat;
+    }
+
+    size_t NodeHashManager::GetNodeHash(size_t board_hash, bool is_red) {
+        if (is_red) {
+            return ~board_hash;
+        }
+        return board_hash;
+    }
+
+    void NodeHashManager::Add(size_t node_hash) {
+        lock_.Lock();
+        hash2cnt[node_hash]++;
+        lock_.UnLock();
+    }
+
+    void NodeHashManager::Remove(size_t node_hash) {
+        lock_.Lock();
+        if (--hash2cnt[node_hash] == 0) {
+            hash2cnt.erase(node_hash);
+        }
+        lock_.UnLock();
+    }
+
+    int NodeHashManager::Get(size_t node_hash) {
+        lock_.Lock();
+        int temp = hash2cnt[node_hash];
+        lock_.UnLock();
+        return temp;
     }
 }

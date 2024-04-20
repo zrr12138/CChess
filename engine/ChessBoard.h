@@ -173,7 +173,7 @@ namespace CChess {
             static std::once_flag once_flag;
 
             std::size_t operator()(const ChessBoard &chessBoard) const;
-
+            static size_t getChessHash(const Chess &chess) ;
             static std::size_t getNextHash(std::size_t hash, const ChessBoard &chessBoard, const ChessMove &move);
         };
 

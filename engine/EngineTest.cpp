@@ -145,15 +145,42 @@ void test5() {
 
 }
 
+void engine_auto_action(ChessBoard board, bool is_red) {
+    auto &engine = MCTSEngine::getInstance();
+    engine.StartSearch(board, is_red);
+    int step = 50;
+    while (board.End() == BoardResult::NOT_END) {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        auto move = engine.GetResult();
+        std::string move_string;
+        assert(board.MoveConversion(move, &move_string));
+        std::cout << "move:" << move << " " << move_string << std::endl;
+        engine.Action(move);
+        assert(board.Move(move));
+        if (step-- < 0) {
+            break;
+        }
+    }
+    engine.Stop();
+}
+
+void test6() {
+    ChessBoard board;
+    board.ParseFromString(
+            R"([{"type": 2, "is_red": true, "row": 0, "col": 3}, {"type": 0, "is_red": false, "row": 0, "col": 5}, {"type": 2, "is_red": true, "row": 1, "col": 4}, {"type": 2, "is_red": true, "row": 2, "col": 5}, {"type": 4, "is_red": false, "row": 8, "col": 0}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
+    engine_auto_action(board, false);
+}
+
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging(argv[0]);
     FLAGS_log_dir = ".";
     FLAGS_minloglevel = 1;
 //
-    test1();
+    //test1();
 //    test2(8);
 //    test3();
 //    test4();
     //test5();
+    test6();
 }

@@ -1293,9 +1293,7 @@ namespace CChess {
             for (int j = 0; j < 9; j++) {
                 size_t temp = 0;
                 auto &chess = chessBoard.GetChessAt(i, j);
-                if (!chess.IsEmpty()) {
-                    temp = chess.is_red ? 19 : 71 + chess.type;
-                }
+                temp = getChessHash(chess);
                 res = res * 131 + temp;
             }
         }
@@ -1309,7 +1307,23 @@ namespace CChess {
                 Power131[i] = Power131[i - 1] * 131;
             }
         });
-        int start_power=90-ChessBoard::convert2DTo1D(move.start_x,move.start_y);
-        return 0;
+        auto start_power=Power131[90-1-ChessBoard::convert2DTo1D(move.start_x,move.start_y)];
+        auto end_power=Power131[90-1-ChessBoard::convert2DTo1D(move.end_x,move.end_y)];
+        auto start_chess=chessBoard.GetChessAt(move.start_x,move.start_y);
+        auto end_chess=chessBoard.GetChessAt(move.end_x,move.end_y);
+        assert(start_chess.type!=ChessType::Empty);
+        hash-= getChessHash(start_chess)*start_power;
+        hash-= getChessHash(end_chess)*end_power;
+        hash+= getChessHash(start_chess)*end_power;
+        return hash;
     }
+
+    size_t ChessBoard::Hash::getChessHash(const Chess &chess) {
+        if(chess.IsEmpty()){
+            return 0;
+        }
+        return chess.is_red ? 19 : 71 + chess.type;
+    }
+    size_t ChessBoard::Hash::Power131[100] = {0};
+    std::once_flag ChessBoard::Hash::once_flag;
 }

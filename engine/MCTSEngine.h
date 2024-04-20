@@ -9,6 +9,7 @@
 #include "common/spinlock.h"
 #include "common/uncopyable.h"
 #include "gflags/gflags.h"
+#include <unordered_map>
 #ifndef CCHESS_MCTSENGINE_H
 #define CCHESS_MCTSENGINE_H
 
@@ -21,14 +22,16 @@ namespace CChess {
     class MCTSEngine;
 
     struct Node {
-        Node(bool is_red, Node *father, const ChessBoard &board);
+        Node(bool is_red, Node *father, const ChessBoard &board, const ChessMove &move);
         ~Node();
         std::atomic<int64_t> n, red_win_count, black_win_count;
         std::atomic<int64_t> access_cnt;
         Node *father;
         bool inited;
-        uint64_t hash;
+        bool is_repeat;
+        uint64_t node_hash;
         uint64_t board_hash;
+        ChessMove move_;
         common::SpinLock initLock;
 
         std::pair<ChessMove, Node*> *move_node_;
@@ -45,6 +48,11 @@ namespace CChess {
         BoardResult ExpandTree(SearchCtx *ctx);
         BoardResult Simulation(SearchCtx *ctx);
         void Init(const ChessBoard &board);
+        void SetRepeat();
+        bool IsRepeat();
+
+
+        void FilterByRule(const ChessBoard &board, std::vector<ChessMove> *moves);
     };
 
     struct SearchCtx {
@@ -107,17 +115,23 @@ namespace CChess {
 
 
     };
+
     class NodeHashManager : public common::Uncopyable{
     public:
         static NodeHashManager& getInstance()
         {
-            static NodeHashManager    instance; // Guaranteed to be destroyed.
+            static NodeHashManager instance; // Guaranteed to be destroyed.
             // Instantiated on first use.
             return instance;
         }
+        static size_t GetNodeHash(size_t board_hash, bool is_red);
+        void Add(size_t node_hash);
+        void Remove(size_t node_hash);
+        int Get(size_t node_hash);
     private:
-        NodeHashManager() {}
+        common::SpinLock lock_;
+        std::unordered_map<size_t,int> hash2cnt;
     };
-};
+}
 
 #endif //CCHESS_MCTSENGINE_H

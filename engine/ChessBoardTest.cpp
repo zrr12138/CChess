@@ -8,7 +8,7 @@
 #include <iostream>
 #include <map>
 #include <math.h>
-#include <common/timeutility.h>
+#include "common/timeutility.h"
 #include <chrono>
 
 using namespace CChess;
@@ -352,32 +352,34 @@ void test12() {
     score = board.EvaluatePosition();
     std::cout << score << std::endl;
 }
-void test13(){
-    std::string temp=R"([{"col":2,"is_red":false,"row":0,"type":6},{"col":5,"is_red":false,"row":0,"type":3},{"col":3,"is_red":false,"row":2,"type":0},{"col":5,"is_red":false,"row":2,"type":3},{"col":1,"is_red":false,"row":7,"type":2},{"col":3,"is_red":true,"row":8,"type":0},{"col":5,"is_red":false,"row":8,"type":2},{"col":8,"is_red":false,"row":9,"type":2}])";
+
+void test13() {
+    std::string temp = R"([{"col":2,"is_red":false,"row":0,"type":6},{"col":5,"is_red":false,"row":0,"type":3},{"col":3,"is_red":false,"row":2,"type":0},{"col":5,"is_red":false,"row":2,"type":3},{"col":1,"is_red":false,"row":7,"type":2},{"col":3,"is_red":true,"row":8,"type":0},{"col":5,"is_red":false,"row":8,"type":2},{"col":8,"is_red":false,"row":9,"type":2}])";
     ChessBoard board;
     board.ParseFromString(temp);
     std::vector<ChessMove> moves;
-    board.GetMoves(true,&moves);
+    board.GetMoves(true, &moves);
     assert(!moves.empty());
 }
-void test14(){
+
+void test14() {
     ChessBoard board;
     board.initBoard();
     board.Reverse();
     ChessBoard board1;
     board1.ParseFromString(board.ToString());
-    assert(board.Move(ChessMove(6,4,5,4)));
-    assert(board1.Move(ChessMove(6,4,5,4)));
+    assert(board.Move(ChessMove(6, 4, 5, 4)));
+    assert(board1.Move(ChessMove(6, 4, 5, 4)));
 
 }
 
-void test15(){
+void test15() {
     ChessBoard board;
     board.ClearBoard();
     board.SetChessAt(Chess(ChessType::Wang, false), 0, 4);
     board.SetChessAt(Chess(ChessType::Wang, true), 9, 4);
     std::vector<ChessMove> moves;
-    board.GetMovesFrom(9, 4,&moves);
+    board.GetMovesFrom(9, 4, &moves);
     assert(std::find(moves.begin(), moves.end(), ChessMove(9, 4, 0, 4)) != moves.end());
     assert(moves.size() == 4);
     board.SetChessAt(Chess(ChessType::Pao, true), 4, 4);
@@ -386,6 +388,7 @@ void test15(){
     assert(moves.size() == 3);
 
 }
+
 void test16() {
     ChessBoard board;
     board.ClearBoard();
@@ -605,6 +608,27 @@ void test23() {
     }
     std::cout << "Bing simulation " << n * 3 << " cost time:" << common::TimeUtility::CLockRealTimeMs() - start << std::endl;
 }
+void test24() {
+    ChessBoard::Hash hash;
+    ChessBoard board;
+    board.ParseFromString(
+            R"([{"type": 2, "is_red": true, "row": 0, "col": 3}, {"type": 0, "is_red": false, "row": 0, "col": 5}, {"type": 2, "is_red": true, "row": 1, "col": 4}, {"type": 2, "is_red": true, "row": 2, "col": 5}, {"type": 4, "is_red": false, "row": 8, "col": 0}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
+    auto hash1=hash(board);
+    ChessMove move(8,0,9,0);
+    auto hash2=ChessBoard::Hash::getNextHash(hash1,board,move);
+    assert(board.Move(move));
+    auto hash3=hash(board);
+    assert(hash3==hash2);
+
+}
+void test25(){
+    ChessBoard board;
+    board.ParseFromString(R"([{"col":3,"is_red":true,"row":0,"type":2},{"col":5,"is_red":false,"row":0,"type":0},{"col":4,"is_red":true,"row":1,"type":2},{"col":5,"is_red":true,"row":2,"type":2},{"col":0,"is_red":false,"row":8,"type":4},{"col":4,"is_red":true,"row":9,"type":0}])");
+    std::string move_string;
+    board.MoveConversion(ChessMove(8,0,8,2),&move_string);
+    assert(move_string=="车1平3");
+}
+
 int main(int argc, char *argv[]) {
     test1();
     test2();
@@ -628,4 +652,6 @@ int main(int argc, char *argv[]) {
     test21();
     test22();
     test23();
+    test24();
+    test25();
 }
