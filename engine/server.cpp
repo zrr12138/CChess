@@ -140,6 +140,13 @@ int main(int argc, char *argv[]) {
         return crow::json::wvalue({{"error", OK},{"best_path",ss.str()}});
 
     });
+    CROW_ROUTE(app, "/root_choose")([&](const crow::request &req) {
+        if (!engine.IsRunning()) {
+            return crow::json::wvalue({{"error", ENGINE_IS_NOT_RUNNING}});
+        }
+        return crow::json::wvalue({{"error", OK},{"root_choose",engine.GetRootChooseStr()}});
+
+    });
     //board api
     CROW_ROUTE(app, "/init_board")([&](const crow::request &req) {
         ChessBoard board;

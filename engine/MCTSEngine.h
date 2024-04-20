@@ -93,6 +93,8 @@ namespace CChess {
 
         const ChessBoard& GetChessBoard() const;
 
+        std::string GetRootChooseStr() const;
+
     private:
         const double C;
         std::atomic<bool> stop_,actioning;

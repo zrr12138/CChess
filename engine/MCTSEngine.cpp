@@ -18,6 +18,7 @@
 #include <fstream>
 #include <algorithm>
 #include <unistd.h>
+#include <iomanip>
 #include "common/defer.h"
 #include "common/spinlock.h"
 #include "common/defer.h"
@@ -25,7 +26,7 @@
 #include "gflags/gflags.h"
 
 DEFINE_int32(thread_num, 8, "");
-DEFINE_double(explore_c, 1, "");
+DEFINE_double(explore_c, 100*sqrt(2), "");
 
 #define THROTTLE_CALL(delay) \
     do { \
@@ -244,6 +245,44 @@ namespace CChess {
     MCTSEngine::~MCTSEngine() {
         Stop();
 
+    }
+
+    std::string MCTSEngine::GetRootChooseStr() const {
+        THROTTLE_CALL(1000);
+        struct NodeInfo {
+            std::string move;
+            int64_t n{}, red_win_count{}, black_win_count{};
+        };
+        int n = root_node_->move_node_size_;
+        bool is_red = root_node_->is_red;
+        NodeInfo info[root_node_->move_node_size_];
+        {
+            for (int i = 0; i < root_node_->move_node_size_; i++) {
+                assert(GetChessBoard().MoveConversion(root_node_->move_node_[i].first, &info[i].move));
+                info[i].n = root_node_->move_node_[i].second->n;
+                info[i].black_win_count = root_node_->move_node_[i].second->black_win_count;
+                info[i].red_win_count = root_node_->move_node_[i].second->red_win_count;
+            }
+        }
+
+        std::sort(info, info + n, [is_red](const NodeInfo &x, const NodeInfo &y) -> bool {
+            if (is_red) {
+                return 1.0 * x.red_win_count / x.n > 1.0 * y.red_win_count / y.n;
+            } else {
+                return 1.0 * x.black_win_count / x.n > 1.0 * y.black_win_count / y.n;
+            }
+        });
+        const std::string space = "          ";
+        std::stringstream ss;
+        ss << "move" << space << "n" << space << "red_win" << space << "black win" << space << "red rate" << space
+           << "black rate" << "\n";
+        ss << std::fixed << std::setprecision(2);
+        for (int i = 0; i < n; i++) {
+            ss << info[i].move << space << info[i].n << space << info[i].red_win_count << space
+               << info[i].black_win_count << space << 1.0 * info[i].red_win_count / info[i].n << space
+               << 1.0 * info[i].black_win_count / info[i].n << "\n";
+        }
+        return ss.str();
     }
 
 
