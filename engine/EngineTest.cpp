@@ -170,7 +170,15 @@ void test6() {
             R"([{"type": 2, "is_red": true, "row": 0, "col": 3}, {"type": 0, "is_red": false, "row": 0, "col": 5}, {"type": 2, "is_red": true, "row": 1, "col": 4}, {"type": 2, "is_red": true, "row": 2, "col": 5}, {"type": 4, "is_red": false, "row": 8, "col": 0}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
     engine_auto_action(board, false);
 }
-
+void test7(){
+    ChessBoard board;
+    board.ParseFromString(R"([{"type": 4, "is_red": true, "row": 0, "col": 4}, {"type": 5, "is_red": true, "row": 0, "col": 5}, {"type": 0, "is_red": false, "row": 1, "col": 5}, {"type": 4, "is_red": false, "row": 7, "col": 6}, {"type": 0, "is_red": true, "row": 9, "col": 4}])");
+    auto &engine = MCTSEngine::getInstance();
+    assert(engine.StartSearch(board, false));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout<<"10 seconds root n"<<engine.GetRootN()<<std::endl;
+    engine.Stop();
+}
 int main(int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, false);
     google::InitGoogleLogging(argv[0]);
@@ -182,5 +190,6 @@ int main(int argc, char *argv[]) {
 //    test3();
 //    test4();
     //test5();
-    test6();
+    //test6();
+    test7();
 }

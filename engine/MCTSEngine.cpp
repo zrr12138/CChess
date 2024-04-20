@@ -351,7 +351,7 @@ namespace CChess {
         thread_local std::minstd_rand generator{std::random_device{}()};
         thread_local std::uniform_int_distribution<int> dist(1, std::numeric_limits<int>::max());
 
-        int move_count_limit = 300;
+        int move_count_limit = 100;
         int move_count = 0;
         bool is_red_now = is_red;
         std::vector<ChessMove> temp;
@@ -455,7 +455,7 @@ namespace CChess {
 
     void Node::SetRepeat() {
         is_repeat = true;
-        // n = 100;
+        //n = 10000;
     }
 
     void Node::FilterByRule(const ChessBoard &board, std::vector<ChessMove> *moves) {
