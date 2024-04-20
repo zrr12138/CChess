@@ -111,6 +111,9 @@ class ChessBoard:
 
     def parse_from_string(self, string):
         json_board = json.loads(string)
+        self.parse_from_json(json_board)
+
+    def parse_from_json(self, json_board):
         self.clear_board()
         for jsonChess in json_board:
             row = jsonChess["row"]
@@ -124,6 +127,9 @@ class ChessBoard:
             self.set_chess(row, col, chess)
 
     def to_string(self):
+        return json.dumps(self.to_json())
+
+    def to_json(self):
         json_board = []
         for row in range(10):
             for col in range(9):
@@ -137,8 +143,7 @@ class ChessBoard:
                     "col": col
                 }
                 json_board.append(json_chess)
-
-        return json.dumps(json_board)
+        return json_board
 
 
 class Move:
@@ -167,6 +172,7 @@ class Move:
         self.end_x = json_move["end_x"]
         self.end_y = json_move["end_y"]
 
+
 class ChessRecord:
     def __init__(self):
         self.boards = []
@@ -180,17 +186,24 @@ class ChessRecord:
     def get_board(self, index):
         return copy.deepcopy(self.boards[index])
 
+    def to_string(self):
+        json.dumps(self.to_json())
+
     def to_json(self):
         json_boards = []
         for board in self.boards:
-            json_board = board.to_string()
+            json_board = board.to_json()
             json_boards.append(json_board)
-        return json.dumps(json_boards)
+        return json_boards
 
-    def from_json(self, json_string):
-        json_boards = json.loads(json_string)
+    def from_json(self, json_boards):
         self.boards = []
         for json_board in json_boards:
             board = ChessBoard()
-            board.parse_from_string(json_board)
+            board.parse_from_json(json_board)
             self.boards.append(board)
+
+    def from_string(self, json_string):
+        assert isinstance(json_string, str)
+        json_boards = json.loads(json_string)
+        self.from_json(json_boards)

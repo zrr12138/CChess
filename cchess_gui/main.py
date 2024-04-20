@@ -6,6 +6,8 @@ from context import *
 import pygame_gui
 from client import Client
 import time
+from logger import logger
+import traceback
 
 # pygame setup
 pygame.init()
@@ -81,6 +83,7 @@ def handle_key_down(ctx, event):
             file_dialog = pygame_gui.windows.UIFileDialog(
                 pygame.Rect(200, 200, 400, 200),
                 gui_manager,
+                allowed_suffixes={".qp"},
                 window_title="选择要打开的 .qp 文件",
                 initial_file_path="/home/zrr/cchess_test",
                 allow_existing_files_only=True,
@@ -147,11 +150,11 @@ def handle_event(ctx: Context, event: pygame.event.Event):
                     with open(event.text, 'r') as file:
                         content = file.read()
                         ctx.record = ChessRecord()
-                        ctx.record.from_json(content)
+                        ctx.record.from_string(content)
                         ctx.record_index = 0
                         ctx.board = ctx.record.get_board(0)
                 except Exception as e:
-                    print(e)
+                    logger.error(traceback.format_exc())
 
 
 last_refresh_think_text_time = 0
@@ -167,6 +170,7 @@ def refresh_think_text(ctx: Context):
     res = client.best_path()
     if res["error"] == 0:
         ctx.think_text = res["best_path"] + "\n" + ctx.think_text
+        ctx.think_text = "\n".join(ctx.think_text.split("\n")[0:7])
 
 
 chess_board = ctx.board.image

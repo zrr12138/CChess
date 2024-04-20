@@ -159,7 +159,7 @@ for contest in contests:
                 end, record = engine_fight(contest)
                 assert isinstance(record, ChessRecord)
                 with open(f"{binary1}_{binary2}_{contest.thread_num}_{contest.think_time}_{ii}.qp", "w") as f:
-                    f.write(record.to_json())
+                    f.write(record.to_string())
                 result.record_result(binary1, binary2, end)
                 final_result.record_result(binary1, binary2, end)
                 run_shell_print(f"pkill -f {binary1}", continue_on_error=True)
