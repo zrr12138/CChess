@@ -160,7 +160,7 @@ def handle_event(ctx: Context, event: pygame.event.Event):
 last_refresh_think_text_time = 0
 
 
-def refresh_think_text(ctx: Context):
+def refresh_think_choose_text(ctx: Context):
     global last_refresh_think_text_time
     current_time = time.time()
     time_since_last_call = current_time - last_refresh_think_text_time
@@ -171,15 +171,27 @@ def refresh_think_text(ctx: Context):
     if res["error"] == 0:
         ctx.think_text = res["best_path"] + "\n" + ctx.think_text
         ctx.think_text = "\n".join(ctx.think_text.split("\n")[0:7])
+        think_text_box.set_text(ctx.think_text)
+    res = client.root_choose()
+    if res["error"] == 0:
+        choose_text_box.set_text(res["root_choose"])
 
 
 chess_board = ctx.board.image
 think_text_box = pygame_gui.elements.UITextBox(
     "",
     relative_rect=pygame.Rect((chess_board.get_rect().width, 0),
-                              (window_size[0] - chess_board.get_rect().width, chess_board.get_rect().height)),
+                              (window_size[0] - chess_board.get_rect().width, window_size[1] // 2)),
     manager=gui_manager
 )
+
+choose_text_box = pygame_gui.elements.UITextBox(
+    "",
+    relative_rect=pygame.Rect((chess_board.get_rect().width, window_size[1] // 2),
+                              (window_size[0] - chess_board.get_rect().width, window_size[1] // 2)),
+    manager=gui_manager,
+)
+
 help_text_box = pygame_gui.elements.UITextBox(
     "",
     relative_rect=pygame.Rect(0, chess_board.get_rect().height, chess_board.get_rect().width,
@@ -200,10 +212,9 @@ while ctx.running:
     ctx.board.draw(screen)
     if ctx.choose_pos is not None:
         ctx.board.highlight(screen, ctx.choose_pos[0], ctx.choose_pos[1], (255, 0, 0))
-    think_text_box.set_text(ctx.think_text)
     help_text_box.set_text(ctx.help_text)
     if ctx.status == Status.SEARCHING:
-        refresh_think_text(ctx)
+        refresh_think_choose_text(ctx)
     gui_manager.draw_ui(screen)
     pygame.display.flip()
     pygame.display.update()

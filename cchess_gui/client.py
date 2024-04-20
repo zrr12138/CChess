@@ -110,3 +110,16 @@ class Client:
         else:
             logger.error(f"get board end failed, get error:{err}")
         return result
+
+    def root_choose(self):
+        url = f"http://{self.ip}:{self.port}/root_choose"
+        res = requests.get(url).json()
+        logger.debug(f"access {url} get request {res}")
+        err = res["error"]
+        result = dict()
+        result["error"] = err
+        if err == 0:
+            result["root_choose"] = res["root_choose"]
+        else:
+            logger.error(f"get best_path failed, get error:{err}")
+        return result
