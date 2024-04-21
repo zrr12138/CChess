@@ -17,21 +17,19 @@ DECLARE_int32(thread_num);
 DECLARE_double(explore_c);
 
 namespace CChess {
-
+    class NodeHashManager;
     struct SearchCtx;
     class MCTSEngine;
 
     struct Node {
+        friend NodeHashManager;
+    private:
         Node(bool is_red, Node *father, const ChessBoard &board, const ChessMove &move);
         ~Node();
+    public:
         std::atomic<int64_t> n, red_win_count, black_win_count;
         std::atomic<int64_t> access_cnt;
-        Node *father;
         bool inited;
-        bool is_repeat;
-        uint64_t node_hash;
-        uint64_t board_hash;
-        ChessMove move_;
         BoardResult end_;
         int end_deep_;
         common::SpinLock initLock;
@@ -49,16 +47,18 @@ namespace CChess {
 
         BoardResult ExpandTree(SearchCtx *ctx);
         BoardResult Simulation(SearchCtx *ctx);
-        void Init(const ChessBoard &board);
+        void Init(SearchCtx *ctx);
         void SetRepeat();
-        bool IsRepeat();
 
-
-        void FilterByRule(const ChessBoard &board, std::vector<ChessMove> *moves);
+        void FilterByRule(SearchCtx *ctx, std::vector<ChessMove> *moves);
     };
 
     struct SearchCtx {
         ChessBoard board;
+        int ttl;
+        std::vector<std::pair<size_t ,ChessMove> > rule_moves;
+        size_t board_hash;
+        void Move(,const ChessMove &move);
     };
 
     class MCTSEngine: public common::Uncopyable{
@@ -103,11 +103,10 @@ namespace CChess {
         std::atomic<int> pause_cnt_;
         common::ThreadPool *threadPool;
         Node* root_node_;
-        ChessBoard root_board_;
-
+        SearchCtx start_ctx;
         MCTSEngine():C(FLAGS_explore_c), thread_num_(FLAGS_thread_num), stop_(true),
                      actioning(false), threadPool(nullptr),
-                     root_node_(nullptr) {}
+                     root_node_(nullptr), pause_cnt_(0) {}
 
         const int thread_num_;
 
@@ -129,13 +128,14 @@ namespace CChess {
             return instance;
         }
         static size_t GetNodeHash(size_t board_hash, bool is_red);
-        void Add(size_t node_hash);
-        void Remove(size_t node_hash);
-        int Get(size_t node_hash);
-        void Dump();
+        Node * GetNode(size_t node_hash,int bucket);
+
+        void ClearBucket(int bucket);
+
     private:
-        common::SpinLock hash2cnt_lock_;
-        std::unordered_map<size_t,int> hash2cnt;
+        static const int bucket_num= 32 + 1;
+        common::SpinLock bucket_lock_[bucket_num];
+        std::unordered_map<size_t,Node *> hash2node_[bucket_num];
     };
 }
 

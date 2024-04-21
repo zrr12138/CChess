@@ -157,6 +157,8 @@ namespace CChess {
 
         void Reverse();
 
+        int GetChessNum();
+
         static int convert2DTo1D(int row, int col) {
             const int numCols = 9;
             return row * numCols + col;

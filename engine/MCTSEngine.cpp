@@ -48,8 +48,13 @@ namespace CChess {
         stop_.store(false);
         LOG(INFO) << __func__ << " board: " << state.ToString() << " red_first: " << red_first;
         //初始化根节点x
-        root_node_ = new Node(red_first, nullptr, state, ChessMove());
-        root_board_ = state;
+        start_ctx.board = state;
+        start_ctx.rule_moves.clear();
+        start_ctx.ttl = 40;
+        ChessBoard::Hash hash;
+        root_node_ = NodeHashManager::getInstance().GetNode(
+                NodeHashManager::GetNodeHash(hash(start_ctx.board), red_first),
+                start_ctx.board.GetChessNum());
         assert(threadPool == nullptr);
         threadPool = new common::ThreadPool();
         threadPool->Init(thread_num_, std::bind(&MCTSEngine::LoopExpandTree, this));
@@ -67,7 +72,7 @@ namespace CChess {
                 while (actioning.load());
             }
             SearchCtx ctx;
-            ctx.board = root_board_;
+            ctx = start_ctx;
             root_node_->ExpandTree(&ctx);
         }
     }
@@ -93,7 +98,7 @@ namespace CChess {
 
         assert(root_node_->move_node_ != nullptr);
         assert(root_node_->move_node_size_ > 0);
-        assert(root_board_.End() == BoardResult::NOT_END);
+        assert(GetChessBoard().End() == BoardResult::NOT_END);
 
         Node *new_root = nullptr;
         for (int i = 0; i < root_node_->move_node_size_; i++) {
@@ -109,24 +114,14 @@ namespace CChess {
         actioning.store(true);
         while (pause_cnt_ != thread_num_);
         // free node
-        auto start = common::TimeUtility::GetTimeofDayMs();
 
-        for (int i = 0; i < root_node_->move_node_size_; i++) {
-            if (root_node_->move_node_[i].first != move) {
-                FreeTree(root_node_->move_node_[i].second);
-                root_node_->move_node_[i].second = nullptr;
-            }
-        }
-        LOG(WARNING) << "free node in " << common::TimeUtility::GetTimeofDayMs() - start << " ms";
-        NodeHashManager::getInstance().Remove(root_node_->node_hash);
-        delete root_node_;
         root_node_ = new_root;
-        root_node_->father = nullptr;
-        assert(root_board_.Move(move));
+        start_ctx.Move(move);
+
         pause_cnt_ = 0;
         actioning = false;
         actioning.store(false);
-        if (root_board_.End() != BoardResult::NOT_END) {
+        if (GetChessBoard().End() != BoardResult::NOT_END) {
             Stop();
         }
         return true;
@@ -238,7 +233,7 @@ namespace CChess {
     }
 
     const ChessBoard &MCTSEngine::GetChessBoard() const {
-        return root_board_;
+        return start_ctx.board;
 
     }
 
@@ -293,7 +288,7 @@ namespace CChess {
             board_hash = ChessBoard::Hash::getNextHash(father->board_hash, board, move);
         }
         node_hash = NodeHashManager::GetNodeHash(board_hash, is_red);
-        if (NodeHashManager::getInstance().Get(node_hash)) {
+        if (NodeHashManager::getInstance().GetNode(node_hash)) {
             SetRepeat();
         }
         NodeHashManager::getInstance().Add(node_hash);
@@ -318,15 +313,18 @@ namespace CChess {
             UpdateValue(ctx->board.End());
             return end_;
         }
+        if (--ctx->ttl <= 0) {
+            return BoardResult::NOT_END;
+        }
         int64_t index = access_cnt.fetch_add(1);
         LOG(INFO) << __func__ << " node: " << this << " access index:" << index;
         if (!inited) {
-            Init(ctx->board);
+            Init(ctx);
         }
         if (move_node_size_ == 0) {
-            auto end = is_red ? BLACK_WIN : RED_WIN;
-            UpdateValue(end);
-            return end;
+            end_ = is_red ? BLACK_WIN : RED_WIN;
+            UpdateValue(end_);
+            return end_;
         }
         if (index >= move_node_size_) {
             std::pair<ChessMove, Node *> *move_node = nullptr;
@@ -337,7 +335,7 @@ namespace CChess {
                       << move_node->second;
             auto &move = move_node->first;
             auto &node = move_node->second;
-            assert(ctx->board.Move(move));
+            ctx->Move(move);
             auto res = node->ExpandTree(ctx);
             UpdateValue(res);
             return res;
@@ -448,7 +446,7 @@ namespace CChess {
         }
     }
 
-    void Node::Init(const ChessBoard &board) {
+    void Node::Init(SearchCtx *ctx) {
         initLock.Lock();
         if (inited) {
             initLock.UnLock();  // 在返回之前解锁
@@ -457,10 +455,10 @@ namespace CChess {
 
         thread_local std::vector<ChessMove> moves;
         moves.clear();
-        board.GetMoves(is_red, &moves);
+        ctx->board.GetMoves(is_red, &moves);
         assert(move_node_ == nullptr);
         //FilterByRule 按照规则过滤不能走的棋
-        FilterByRule(board, &moves);
+        FilterByRule(ctx, &moves);
         //
         move_node_size_ = moves.size();
         move_node_ = new std::pair<ChessMove, Node *>[move_node_size_];
@@ -539,18 +537,14 @@ namespace CChess {
         return ptr;
     }
 
-    void Node::SetRepeat() {
-        is_repeat = true;
-        //n = 10000;
-    }
-
-    void Node::FilterByRule(const ChessBoard &board, std::vector<ChessMove> *moves) {
-        if (!IsRepeat()) {
-            return;
-        }
+    void Node::FilterByRule(SearchCtx *ctx, std::vector<ChessMove> *moves) {
         std::vector<ChessMove> cycle_moves;
         bool find_cycle = false;
         Node *node = this;
+        auto node_hash=
+        for(const auto &it:ctx->rule_moves){
+            if(it.first==)
+        }
         while (node->father != nullptr) {
             cycle_moves.emplace_back(node->move_);
             node = node->father;
@@ -566,7 +560,7 @@ namespace CChess {
         std::reverse(cycle_moves.begin(), cycle_moves.end());
         std::vector<int> score;
         std::vector<ChessMove> temp;
-        auto temp_board = board;
+        auto temp_board = ctx;
         auto temp_is_red = is_red;
         static int type2ruleScore[] = {1000, 45, 10, 5, 90, 45, 10};
         for (auto &cycle_move: cycle_moves) {
@@ -610,10 +604,6 @@ namespace CChess {
         }
     }
 
-    bool Node::IsRepeat() {
-        return is_repeat;
-    }
-
     size_t NodeHashManager::GetNodeHash(size_t board_hash, bool is_red) {
         if (is_red) {
             return ~board_hash;
@@ -621,40 +611,19 @@ namespace CChess {
         return board_hash;
     }
 
-    void NodeHashManager::Add(size_t node_hash) {
-        hash2cnt_lock_.Lock();
-        hash2cnt[node_hash]++;
-        hash2cnt_lock_.UnLock();
+    Node *NodeHashManager::GetNode(size_t node_hash, int bucket) {
+
+        return nullptr;
     }
 
-    void NodeHashManager::Remove(size_t node_hash) {
-        hash2cnt_lock_.Lock();
-        if (--hash2cnt[node_hash] == 0) {
-            hash2cnt.erase(node_hash);
+    void NodeHashManager::ClearBucket(int bucket) {
+        assert(bucket >= 0 && bucket < bucket_num);
+        bucket_lock_[bucket].Lock();
+        for (auto &it: hash2node_[bucket]) {
+            delete it.second;
         }
-        hash2cnt_lock_.UnLock();
-    }
-
-    int NodeHashManager::Get(size_t node_hash) {
-        hash2cnt_lock_.Lock();
-        int temp = hash2cnt[node_hash];
-        hash2cnt_lock_.UnLock();
-        return temp;
-    }
-
-    void NodeHashManager::Dump() {
-        hash2cnt_lock_.Lock();
-        std::map<int, int> Hash;
-        int sum = 0;
-        for (const auto &it: hash2cnt) {
-            Hash[it.second]++;
-            sum ++;
-        }
-        hash2cnt_lock_.UnLock();
-        for (auto it: Hash) {
-            std::cout << "出现" << it.first << "次的局面有" << it.second << "个" << "，占比"
-                      << static_cast<double >(it.second) / sum << std::endl;
-        }
+        hash2node_[bucket].clear();
+        bucket_lock_[bucket].UnLock();
     }
 
 
