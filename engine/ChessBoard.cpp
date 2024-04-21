@@ -1037,7 +1037,10 @@ namespace CChess {
         bool isRed = board[move.start_x][move.start_y].is_red;
         conversion = GetFileRank(move, isRed, conversion);
         if (move.start_x == move.end_x) {
-            conversion += "平" + GetNumberName(8 - move.end_y, isRed);
+            if (isRed)
+                conversion += "平" + GetNumberName(8 - move.end_y, isRed);
+            else
+                conversion += "平" + GetNumberName(move.end_y, isRed);
             return conversion;
         } else if (red_at_0 == isRed && move.end_x > move.start_x || red_at_0 != isRed && move.end_x < move.start_x) {
             conversion += "进";

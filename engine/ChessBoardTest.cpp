@@ -211,6 +211,13 @@ void test6() {
     board.MoveConversion(ChessMove(8, 7, 2, 7), &QiPu);
     board.Move(ChessMove(8, 7, 2, 7));
     assert(QiPu == "后炮进六");
+    board.initBoard();
+    board.MoveConversion(ChessMove(2, 7, 2, 5), &QiPu);
+    board.Move(ChessMove(2, 7, 2, 5));
+    assert(QiPu == "炮8平6");
+    board.MoveConversion(ChessMove(2, 1, 2, 4), &QiPu);
+    board.Move(ChessMove(2, 1, 2, 4));
+    assert(QiPu == "炮2平5");
 }
 
 void test7() {
