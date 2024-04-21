@@ -16,7 +16,6 @@ using namespace CChess;
 
 void test1() {
     ChessBoard board;
-    board.ClearBoard();
     /*board.BoardRed(true);
     board.SetChessAt(Chess(ChessType::Ma, true), 2, 0);
     board.SetChessAt(Chess(ChessType::Xiang, false), 0, 1);
@@ -53,6 +52,7 @@ void test1() {
             assert(board.EvaluatePosition() > 0);
             break;
         }
+        std::cout << board.GetChessNumber() << std::endl;
     }
     std::string err;
     assert(board.IsLegal(&err));

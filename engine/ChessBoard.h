@@ -77,6 +77,7 @@ namespace CChess {
         bool red_at_0{};
 
         BoardResult end;
+        int chessNumber;
         std::vector<Chess> Total;
         uint32_t xorshift_state{};
 
@@ -128,6 +129,8 @@ namespace CChess {
         bool Move(const ChessMove &move);
 
         BoardResult End() const;
+
+        int GetChessNumber() const;
 
         void ClearBoard();
 

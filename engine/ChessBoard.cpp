@@ -370,6 +370,9 @@ namespace CChess {
         if (!end_chess.IsEmpty() && end_chess.type == ChessType::Wang) {
             end = end_chess.is_red ? BoardResult::BLACK_WIN : BoardResult::RED_WIN;
         }
+        if (!end_chess.IsEmpty()) {
+            chessNumber--;
+        }
         end_chess = start_chess;
         start_chess.SetEmpty();
         return true;
@@ -380,6 +383,7 @@ namespace CChess {
     }
 
     void ChessBoard::ClearBoard() {
+        chessNumber = 0;
         end = NOT_END;
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 9; j++) {
@@ -497,6 +501,7 @@ namespace CChess {
     }
 
     void ChessBoard::SetChessAt(const Chess &chess, int x, int y) {
+        chessNumber++;
         assert(!chess.IsEmpty());
         board[x][y] = chess;
     }
@@ -1219,6 +1224,10 @@ namespace CChess {
                 return GetNumberName(col, is_red);
             }
         }
+    }
+
+    int ChessBoard::GetChessNumber() const {
+        return chessNumber;
     }
 
 
